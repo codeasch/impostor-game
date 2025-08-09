@@ -1,0 +1,8 @@
+This is a placeholder for icon-192x192.png
+You can:
+1. Create a 192x192 pixel PNG icon for your app
+2. Use online tools like favicon.io or canva.com
+3. Or temporarily rename icon.svg to icon-192x192.png (though it won't be PNG)
+
+The icon should represent your Impostor game - maybe a question mark or detective theme.
+

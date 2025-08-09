@@ -1,0 +1,40 @@
+{
+  "name": "Animals",
+  "description": "Creatures from around the world",
+  "words": [
+    "lion", "tiger", "leopard", "cheetah", "jaguar",
+    "elephant", "rhino", "hippo", "giraffe", "zebra",
+    "eagle", "hawk", "owl", "parrot", "penguin",
+    "shark", "whale", "dolphin", "octopus", "jellyfish",
+    "spider", "ant", "bee", "butterfly", "dragonfly",
+    "snake", "lizard", "turtle", "frog", "salamander",
+    "horse", "cow", "pig", "sheep", "goat",
+    "wolf", "fox", "bear", "deer", "rabbit",
+    "monkey", "gorilla", "chimpanzee", "orangutan", "lemur",
+    "kangaroo", "koala", "platypus", "echidna", "wombat"
+  ],
+  "close_pairs": {
+    "lion": ["tiger", "leopard", "cheetah"],
+    "tiger": ["lion", "leopard"],
+    "leopard": ["lion", "tiger", "cheetah"],
+    "elephant": ["rhino", "hippo"],
+    "rhino": ["elephant", "hippo"],
+    "eagle": ["hawk", "owl"],
+    "hawk": ["eagle", "owl"],
+    "shark": ["whale", "dolphin"],
+    "whale": ["shark", "dolphin"],
+    "dolphin": ["whale", "shark"],
+    "spider": ["ant", "bee"],
+    "ant": ["spider", "bee"],
+    "snake": ["lizard", "turtle"],
+    "lizard": ["snake", "turtle"],
+    "horse": ["cow", "pig"],
+    "cow": ["horse", "pig"],
+    "wolf": ["fox", "bear"],
+    "fox": ["wolf", "bear"],
+    "monkey": ["gorilla", "chimpanzee"],
+    "gorilla": ["monkey", "chimpanzee"],
+    "kangaroo": ["koala", "wombat"],
+    "koala": ["kangaroo", "platypus"]
+  }
+}

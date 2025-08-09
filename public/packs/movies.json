@@ -1,0 +1,39 @@
+{
+  "name": "Movies & TV",
+  "description": "Entertainment and pop culture",
+  "words": [
+    "action", "comedy", "drama", "horror", "romance",
+    "superhero", "villain", "hero", "sidekick", "mentor",
+    "director", "actor", "actress", "producer", "writer",
+    "camera", "microphone", "lights", "script", "scene",
+    "theater", "cinema", "screen", "projector", "speaker",
+    "popcorn", "tickets", "premiere", "trailer", "sequel",
+    "oscar", "emmy", "golden globe", "award", "nomination",
+    "netflix", "disney", "marvel", "pixar", "warner",
+    "zombie", "alien", "robot", "monster", "ghost",
+    "adventure", "mystery", "thriller", "fantasy", "scifi"
+  ],
+  "close_pairs": {
+    "action": ["adventure", "thriller"],
+    "comedy": ["drama", "romance"],
+    "drama": ["comedy", "romance"],
+    "superhero": ["hero", "villain"],
+    "villain": ["superhero", "hero"],
+    "director": ["producer", "writer"],
+    "actor": ["actress", "director"],
+    "camera": ["microphone", "lights"],
+    "microphone": ["camera", "speaker"],
+    "theater": ["cinema", "screen"],
+    "cinema": ["theater", "screen"],
+    "popcorn": ["tickets", "premiere"],
+    "tickets": ["popcorn", "trailer"],
+    "oscar": ["emmy", "award"],
+    "emmy": ["oscar", "golden globe"],
+    "netflix": ["disney", "warner"],
+    "disney": ["pixar", "marvel"],
+    "zombie": ["monster", "ghost"],
+    "alien": ["robot", "monster"],
+    "adventure": ["mystery", "fantasy"],
+    "mystery": ["thriller", "adventure"]
+  }
+}

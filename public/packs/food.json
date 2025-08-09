@@ -1,0 +1,36 @@
+{
+  "name": "Food & Drinks",
+  "description": "Culinary delights and beverages",
+  "words": [
+    "pizza", "burger", "hotdog", "sandwich", "wrap",
+    "pasta", "spaghetti", "lasagna", "ravioli", "gnocchi",
+    "sushi", "ramen", "tempura", "miso", "sake",
+    "tacos", "burritos", "nachos", "quesadilla", "guacamole",
+    "steak", "chicken", "pork", "lamb", "fish",
+    "salad", "soup", "bread", "cheese", "butter",
+    "coffee", "tea", "juice", "soda", "water",
+    "beer", "wine", "whiskey", "vodka", "rum",
+    "cake", "cookies", "pie", "ice cream", "chocolate",
+    "apple", "banana", "orange", "grapes", "strawberry"
+  ],
+  "close_pairs": {
+    "pizza": ["burger", "hotdog", "sandwich"],
+    "burger": ["pizza", "hotdog"],
+    "pasta": ["spaghetti", "lasagna"],
+    "spaghetti": ["pasta", "lasagna"],
+    "sushi": ["ramen", "tempura"],
+    "ramen": ["sushi", "miso"],
+    "tacos": ["burritos", "quesadilla"],
+    "burritos": ["tacos", "nachos"],
+    "steak": ["chicken", "pork"],
+    "chicken": ["steak", "pork"],
+    "coffee": ["tea", "juice"],
+    "tea": ["coffee", "water"],
+    "beer": ["wine", "whiskey"],
+    "wine": ["beer", "vodka"],
+    "cake": ["cookies", "pie"],
+    "cookies": ["cake", "chocolate"],
+    "apple": ["banana", "orange"],
+    "banana": ["apple", "grapes"]
+  }
+}

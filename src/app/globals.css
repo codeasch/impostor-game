@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 220 13% 9%;
+    --foreground: 220 13% 91%;
+    --card: 220 13% 12%;
+    --card-foreground: 220 13% 91%;
+    --popover: 220 13% 12%;
+    --popover-foreground: 220 13% 91%;
+    --primary: 198 93% 60%;
+    --primary-foreground: 220 13% 9%;
+    --secondary: 220 13% 15%;
+    --secondary-foreground: 220 13% 91%;
+    --muted: 220 13% 15%;
+    --muted-foreground: 220 13% 63%;
+    --accent: 280 89% 60%;
+    --accent-foreground: 220 13% 91%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 220 13% 91%;
+    --border: 220 13% 18%;
+    --input: 220 13% 18%;
+    --ring: 198 93% 60%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+  
+  /* Touch targets */
+  button, [role="button"], input, select, textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Focus styles */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+  
+  /* Smooth transitions */
+  * {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+}
+
+@layer components {
+  .reveal-card {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+  }
+  
+  .reveal-card-inner {
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+  }
+  
+  .reveal-card.flipped .reveal-card-inner {
+    transform: rotateY(180deg);
+  }
+  
+  .reveal-card-front,
+  .reveal-card-back {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  
+  .reveal-card-back {
+    transform: rotateY(180deg);
+  }
+}
+
+/* Loading spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+

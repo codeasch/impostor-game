@@ -1,0 +1,39 @@
+{
+  "name": "Places",
+  "description": "Cities, landmarks, and locations",
+  "words": [
+    "paris", "london", "tokyo", "newyork", "rome",
+    "beach", "mountain", "forest", "desert", "lake",
+    "school", "hospital", "library", "museum", "theater",
+    "restaurant", "cafe", "bar", "hotel", "store",
+    "park", "zoo", "stadium", "airport", "station",
+    "house", "apartment", "castle", "mansion", "cabin",
+    "kitchen", "bedroom", "bathroom", "garage", "garden",
+    "office", "factory", "warehouse", "mall", "market",
+    "church", "temple", "mosque", "synagogue", "cathedral",
+    "bridge", "tower", "statue", "fountain", "monument"
+  ],
+  "close_pairs": {
+    "paris": ["london", "rome"],
+    "london": ["paris", "tokyo"],
+    "tokyo": ["london", "newyork"],
+    "beach": ["lake", "mountain"],
+    "mountain": ["forest", "desert"],
+    "school": ["library", "museum"],
+    "library": ["school", "museum"],
+    "restaurant": ["cafe", "bar"],
+    "cafe": ["restaurant", "bar"],
+    "park": ["zoo", "garden"],
+    "zoo": ["park", "stadium"],
+    "house": ["apartment", "cabin"],
+    "apartment": ["house", "mansion"],
+    "kitchen": ["bedroom", "bathroom"],
+    "bedroom": ["kitchen", "bathroom"],
+    "office": ["factory", "warehouse"],
+    "factory": ["office", "warehouse"],
+    "church": ["temple", "cathedral"],
+    "temple": ["church", "mosque"],
+    "bridge": ["tower", "monument"],
+    "tower": ["bridge", "statue"]
+  }
+}
