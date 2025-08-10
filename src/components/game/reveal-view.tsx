@@ -274,7 +274,7 @@ export function RevealView() {
               ) : (
                 <div className="flex items-center gap-2">
                   <EyeOff className="w-5 h-5" />
-                  I'm Ready
+                  I&#39;m Ready
                 </div>
               )}
             </Button>
@@ -347,7 +347,7 @@ export function RevealView() {
                 <>
                   <li>• Listen carefully to find the real word</li>
                   <li>• Give vague clues that could apply to anything</li>
-                  <li>• Don't be too obvious - blend in!</li>
+                  <li>• Don&#39;t be too obvious - blend in!</li>
                 </>
               ) : (
                 <>

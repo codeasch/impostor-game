@@ -121,9 +121,9 @@ export function SettingsPanel({ isOpen, onOpenChange }: SettingsPanelProps) {
                     )}
                   >
                     <div className="font-medium">Blank Cards</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Impostors see a "?" - classic mode
-                    </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Impostors see a &quot;?&quot; - classic mode
+                      </div>
                   </button>
 
                   <button
@@ -136,9 +136,9 @@ export function SettingsPanel({ isOpen, onOpenChange }: SettingsPanelProps) {
                     )}
                   >
                     <div className="font-medium">Deception Mode</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      🤯 Impostors think they're innocent - mind games!
-                    </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        🤯 Impostors think they&#39;re innocent - mind games!
+                      </div>
                   </button>
                 </div>
               </div>
