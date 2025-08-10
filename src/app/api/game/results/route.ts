@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Find most voted player
-    let mostVotedPlayer = null;
+    let mostVotedPlayer: { id: string; name: string; votes: number } | null = null;
     let maxVotes = 0;
     let tiedPlayers = 0;
 
@@ -95,8 +95,10 @@ export async function GET(request: NextRequest) {
 
     // Determine winner
     let win: 'INNOCENT' | 'IMPOSTOR' = 'INNOCENT';
+    const mv = mostVotedPlayer as { id: string; name: string; votes: number } | null;
+    const mostVotedId: string | null = mv ? (mv.id as string) : null;
     
-    if (mostVotedPlayer && impostorIds.includes(mostVotedPlayer.id)) {
+    if (mostVotedId && impostorIds.includes(mostVotedId)) {
       // Impostor was voted out - innocent wins
       win = 'INNOCENT';
     } else {

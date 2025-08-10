@@ -25,16 +25,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid settings' }, { status: 400 });
     }
 
-    // Broadcast the settings to all clients
-    const channel = supabaseAdmin.channel(`room:${room_code}`);
-    const { error: broadcastError } = await channel.send({
-      type: 'broadcast',
-      event: 'SETTINGS_UPDATE',
-      payload: { settings }
-    });
-
-    if (broadcastError) {
-      console.error('Broadcast error:', broadcastError);
+    // Broadcast the settings to all clients (best-effort)
+    try {
+      const channel = supabaseAdmin.channel(`room:${room_code}`);
+      await channel.send({
+        type: 'broadcast',
+        event: 'SETTINGS_UPDATE',
+        payload: { settings }
+      });
+    } catch (broadcastError) {
+      console.warn('Broadcast error (ignored):', broadcastError);
     }
 
     return NextResponse.json({ success: true });

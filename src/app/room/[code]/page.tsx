@@ -63,12 +63,15 @@ export default function RoomPage() {
             }
             if (resp.ok) {
               const data = await resp.json();
-              token = data.token;
-              localStorage.setItem('impostor_token', token);
-              // Update token cache for this room
-              const tokens = JSON.parse(localStorage.getItem('impostor_tokens') || '{}');
-              tokens[roomCode.toUpperCase()] = { token: data.token, player: data.player, updatedAt: Date.now() };
-              localStorage.setItem('impostor_tokens', JSON.stringify(tokens));
+              const newToken: string = String(data.token || '');
+              if (newToken) {
+                token = newToken;
+                localStorage.setItem('impostor_token', newToken);
+                // Update token cache for this room
+                const tokens = JSON.parse(localStorage.getItem('impostor_tokens') || '{}');
+                tokens[roomCode.toUpperCase()] = { token: newToken, player: data.player, updatedAt: Date.now() };
+                localStorage.setItem('impostor_tokens', JSON.stringify(tokens));
+              }
             }
           }
         }
@@ -251,11 +254,11 @@ export default function RoomPage() {
         const token = localStorage.getItem('impostor_token');
         if (token) {
           // Best-effort heartbeat with keepalive to mark recent presence
-          fetch('/api/presence/heartbeat', {
+          void fetch('/api/presence/heartbeat', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },
             keepalive: true,
-          }).catch(() => {});
+          });
         }
       } catch {}
       if (channel) channel.unsubscribe();

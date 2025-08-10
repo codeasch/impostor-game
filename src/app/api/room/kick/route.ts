@@ -34,9 +34,14 @@ export async function POST(request: NextRequest) {
     await supabaseAdmin.from('presence').delete().eq('room_code', room_code).eq('player_id', playerId);
 
     // Optional: remove from ready_players
-    await supabaseAdmin.rpc('array_remove_uuid', { 
-      table_name: 'rooms', col_name: 'ready_players', key: 'code', key_val: room_code, uuid_val: playerId 
-    }).catch(() => {});
+    try {
+      const { error: rpcErr } = await supabaseAdmin.rpc('array_remove_uuid', { 
+        table_name: 'rooms', col_name: 'ready_players', key: 'code', key_val: room_code, uuid_val: playerId 
+      });
+      if (rpcErr) {
+        console.warn('array_remove_uuid RPC error (ignored):', rpcErr);
+      }
+    } catch {}
 
     return NextResponse.json({ ok: true });
   } catch (e) {

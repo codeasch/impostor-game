@@ -19,6 +19,7 @@ export interface Room {
   status: GameStatus;
   created_at: string;
   current_round: number;
+  ready_players?: string[]; // UUIDs of players marked ready this phase
 }
 
 export interface Player {

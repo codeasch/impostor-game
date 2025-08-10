@@ -17,7 +17,7 @@ interface GameResult {
 }
 
 export function ResultView() {
-  const { players, settings, isHost } = useGameStore();
+  const { players, gameSettings, isHost } = useGameStore();
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPlayingAgain, setIsPlayingAgain] = useState(false);
@@ -102,12 +102,14 @@ export function ResultView() {
         },
       });
       // Ensure we explicitly mark disconnected too
-      await fetch('/api/presence/disconnect', {
+      try {
+        await fetch('/api/presence/disconnect', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('impostor_token')}`,
         },
-      }).catch(() => {});
+        });
+      } catch {}
       
       // Clear local storage and redirect
       // Keep per-room token so Resume list can allow rejoin if room is still active
@@ -131,15 +133,18 @@ export function ResultView() {
         },
       });
       if (!resp.ok) {
-        const data = await resp.json().catch(() => ({}));
+        let data: any = {};
+        try { data = await resp.json(); } catch {}
         throw new Error(data.error || 'Failed to end room');
       }
-      await fetch('/api/presence/disconnect', {
+      try {
+        await fetch('/api/presence/disconnect', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('impostor_token')}`,
         },
-      }).catch(() => {});
+        });
+      } catch {}
     } catch (error) {
       console.error('Failed to end room:', error);
     } finally {
@@ -310,12 +315,12 @@ export function ResultView() {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-muted-foreground">Pack:</span>
-              <span className="ml-2 font-medium capitalize">{settings?.pack || 'Unknown'}</span>
+              <span className="ml-2 font-medium capitalize">{gameSettings?.pack || 'Unknown'}</span>
             </div>
             <div>
               <span className="text-muted-foreground">Mode:</span>
               <span className="ml-2 font-medium">
-                {settings?.mode === 'BLANK' ? 'Blank Cards' : 'Close Words'}
+                {gameSettings?.mode === 'BLANK' ? 'Blank Cards' : 'Close Words'}
               </span>
             </div>
             <div>

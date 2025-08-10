@@ -6,18 +6,18 @@ export async function POST(request: NextRequest) {
     const { roomCode, message } = await request.json();
 
     // Send a test broadcast
-    const { error } = await supabaseAdmin
-      .channel(`room:${roomCode}`)
-      .send({
-        type: 'broadcast',
-        event: 'TEST_MESSAGE',
-        payload: { message, timestamp: new Date().toISOString() }
-      });
-
-    if (error) {
+    try {
+      await supabaseAdmin
+        .channel(`room:${roomCode}`)
+        .send({
+          type: 'broadcast',
+          event: 'TEST_MESSAGE',
+          payload: { message, timestamp: new Date().toISOString() }
+        });
+    } catch (error) {
       return NextResponse.json({ 
         success: false, 
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Broadcast failed' 
       }, { status: 500 });
     }
 
