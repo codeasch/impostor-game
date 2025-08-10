@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Users, RotateCcw, LogOut, Package } from 'lucide-react';
+import { Crown, Users, RotateCcw, LogOut, Package, Power } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameStore } from '@/stores/game-store';
@@ -101,13 +101,54 @@ export function ResultView() {
           'Authorization': `Bearer ${localStorage.getItem('impostor_token')}`,
         },
       });
+      // Ensure we explicitly mark disconnected too
+      await fetch('/api/presence/disconnect', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('impostor_token')}`,
+        },
+      }).catch(() => {});
       
       // Clear local storage and redirect
+      // Keep per-room token so Resume list can allow rejoin if room is still active
+      // Just clear current active token
       localStorage.removeItem('impostor_token');
       window.location.href = '/';
     } catch (error) {
       console.error('Failed to leave room:', error);
       // Redirect anyway
+      window.location.href = '/';
+    }
+  };
+
+  const handleEndRoom = async () => {
+    setIsLeavingRoom(true);
+    try {
+      const resp = await fetch('/api/room/end', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('impostor_token')}`,
+        },
+      });
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to end room');
+      }
+      await fetch('/api/presence/disconnect', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('impostor_token')}`,
+        },
+      }).catch(() => {});
+    } catch (error) {
+      console.error('Failed to end room:', error);
+    } finally {
+      // Clear local storage and redirect
+      const tokens = JSON.parse(localStorage.getItem('impostor_tokens') || '{}');
+      const code = window.location.pathname.split('/').pop()?.toUpperCase();
+      if (code && tokens[code]) delete tokens[code];
+      localStorage.setItem('impostor_tokens', JSON.stringify(tokens));
+      localStorage.removeItem('impostor_token');
       window.location.href = '/';
     }
   };
@@ -317,25 +358,47 @@ export function ResultView() {
           </Button>
         )}
 
-        <Button
-          onClick={handleLeaveRoom}
-          disabled={isLeavingRoom}
-          variant="outline"
-          size="lg"
-          className="w-full"
-        >
-          {isLeavingRoom ? (
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
-              Leaving...
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <LogOut className="w-4 h-4" />
-              Leave Room
-            </div>
-          )}
-        </Button>
+        {isHost ? (
+          <Button
+            onClick={handleEndRoom}
+            disabled={isLeavingRoom}
+            variant="destructive"
+            size="lg"
+            className="w-full"
+          >
+            {isLeavingRoom ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-destructive/30 border-t-destructive rounded-full animate-spin" />
+                Ending...
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Power className="w-4 h-4" />
+                End Room
+              </div>
+            )}
+          </Button>
+        ) : (
+          <Button
+            onClick={handleLeaveRoom}
+            disabled={isLeavingRoom}
+            variant="outline"
+            size="lg"
+            className="w-full"
+          >
+            {isLeavingRoom ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-foreground/30 border-t-foreground rounded-full animate-spin" />
+                Leaving...
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <LogOut className="w-4 h-4" />
+                Leave Room
+              </div>
+            )}
+          </Button>
+        )}
       </motion.div>
     </div>
   );

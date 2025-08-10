@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret-key';
 
 export async function POST(request: NextRequest) {
   try {
-    const { roomCode, name } = await request.json();
+    const { roomCode, name, deviceId } = await request.json();
 
     if (!roomCode || typeof roomCode !== 'string' || roomCode.length !== 6) {
       return NextResponse.json({ error: 'Invalid room code' }, { status: 400 });
@@ -34,6 +34,51 @@ export async function POST(request: NextRequest) {
 
     if (room.status === 'ENDED') {
       return NextResponse.json({ error: 'This room has ended' }, { status: 400 });
+    }
+
+    // If deviceId is provided, attempt to reuse existing player for this device
+    if (deviceId && typeof deviceId === 'string') {
+      const { data: devicePlayer } = await supabaseAdmin
+        .from('players')
+        .select('*')
+        .eq('room_code', roomCode.toUpperCase())
+        .eq('device_id', deviceId)
+        .single();
+
+      if (devicePlayer) {
+        // Update name if changed
+        if (devicePlayer.name !== name.trim()) {
+          await supabaseAdmin
+            .from('players')
+            .update({ name: name.trim() })
+            .eq('id', devicePlayer.id);
+          devicePlayer.name = name.trim();
+        }
+        // Refresh token and return existing player
+        const token = jwt.sign(
+          {
+            player_id: devicePlayer.id,
+            room_code: roomCode.toUpperCase(),
+            is_host: !!devicePlayer.is_host,
+          },
+          JWT_SECRET,
+          { expiresIn: '24h' }
+        );
+
+        const { data: players } = await supabaseAdmin
+          .from('players')
+          .select('*')
+          .eq('room_code', roomCode.toUpperCase())
+          .order('joined_at', { ascending: true });
+
+        return NextResponse.json({
+          roomCode: roomCode.toUpperCase(),
+          player: devicePlayer,
+          room,
+          players: players || [],
+          token,
+        });
+      }
     }
 
     // Check if name is already taken in this room
@@ -67,6 +112,7 @@ export async function POST(request: NextRequest) {
         is_host: false,
         connected: true,
         avatar_seed: generateAvatarSeed(),
+        device_id: deviceId && typeof deviceId === 'string' ? deviceId : null,
       })
       .select()
       .single();

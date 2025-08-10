@@ -18,9 +18,13 @@ create table players (
   is_host boolean default false,
   connected boolean default true,
   joined_at timestamptz default now(),
-  avatar_seed text
+  avatar_seed text,
+  device_id text,
+  kicked boolean default false,
+  kicked_at timestamptz
 );
 create index on players(room_code);
+create index if not exists players_room_device_idx on players(room_code, device_id);
 
 -- Rounds & assignments
 create table rounds (
@@ -133,3 +137,19 @@ alter publication supabase_realtime add table rooms;
 alter publication supabase_realtime add table players;
 alter publication supabase_realtime add table rounds;
 alter publication supabase_realtime add table votes;
+
+-- Optional RPC to remove a uuid from a uuid[] column by key
+CREATE OR REPLACE FUNCTION array_remove_uuid(
+  table_name text,
+  col_name text,
+  key text,
+  key_val text,
+  uuid_val uuid
+) RETURNS void AS $$
+DECLARE
+  sql text;
+BEGIN
+  sql := format('UPDATE %I SET %I = array_remove(%I, $1) WHERE %I = $2', table_name, col_name, col_name, key);
+  EXECUTE sql USING uuid_val, key_val;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

@@ -36,6 +36,11 @@ export async function GET(
       return NextResponse.json({ error: 'Room not found' }, { status: 404 });
     }
 
+    // If room ended, block access for clients resuming
+    if (room.status === 'ENDED') {
+      return NextResponse.json({ error: 'Room has ended' }, { status: 410 });
+    }
+
     // Fetch players
     const { data: players, error: playersError } = await supabaseAdmin
       .from('players')
@@ -53,11 +58,12 @@ export async function GET(
       return NextResponse.json({ error: 'Player not found in room' }, { status: 404 });
     }
 
-    return NextResponse.json({
-      room,
-      players: players || [],
-      currentPlayer,
-    });
+    // If kicked, inform client; they will show a modal and block UI
+    if (currentPlayer.kicked) {
+      return NextResponse.json({ room, players: players || [], currentPlayer });
+    }
+
+    return NextResponse.json({ room, players: players || [], currentPlayer });
   } catch (error) {
     console.error('Error fetching room:', error);
     return NextResponse.json({ 

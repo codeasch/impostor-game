@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Settings, Crown, User } from 'lucide-react';
+import { Play, Settings, Crown, User, XCircle, Power } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameStore } from '@/stores/game-store';
@@ -22,6 +22,44 @@ export function LobbyView() {
 
   const connectedPlayers = players.filter(p => p.connected);
   const canStart = connectedPlayers.length >= 3;
+
+  const handleKick = async (playerId: string) => {
+    try {
+      const resp = await fetch('/api/room/kick', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('impostor_token')}`,
+        },
+        body: JSON.stringify({ playerId }),
+      });
+      if (!resp.ok) {
+        const data = await resp.json();
+        throw new Error(data.error || 'Failed to remove player');
+      }
+    } catch (e) {
+      console.error('Kick failed', e);
+      alert('Failed to remove player');
+    }
+  };
+
+  const handleEndRoom = async () => {
+    try {
+      const resp = await fetch('/api/room/end', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('impostor_token')}`,
+        },
+      });
+      if (!resp.ok) {
+        const data = await resp.json();
+        throw new Error(data.error || 'Failed to end room');
+      }
+    } catch (e) {
+      console.error('End room failed', e);
+      alert('Failed to end room');
+    }
+  };
 
   const handleStartGame = async () => {
     if (!canStart || !isHost) return;
@@ -113,6 +151,16 @@ export function LobbyView() {
                     <span className="text-xs text-muted-foreground">You</span>
                   )}
                 </div>
+                {/* Kick control retained in code but hidden */}
+                {/* {isHost && !player.is_host && (
+                  <button
+                    aria-label="Remove player"
+                    className="text-destructive hover:text-destructive/80"
+                    onClick={() => handleKick(player.id)}
+                  >
+                    <XCircle className="w-5 h-5" />
+                  </button>
+                )} */}
               </motion.div>
             ))}
           </div>
@@ -194,6 +242,16 @@ export function LobbyView() {
                   {!canStart && ' (Need 3+ players)'}
                 </div>
               )}
+            </Button>
+
+            <Button
+              onClick={handleEndRoom}
+              variant="destructive"
+              size="lg"
+              className="w-full h-12"
+            >
+              <Power className="w-5 h-5 mr-2" />
+              End Room
             </Button>
           </>
         )}

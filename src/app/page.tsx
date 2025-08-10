@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Users, Plus, LogIn, Gamepad2 } from 'lucide-react';
@@ -17,8 +17,68 @@ export default function HomePage() {
   const [playerName, setPlayerName] = useState('');
   const [roomCode, setRoomCode] = useState('');
   const [error, setError] = useState('');
+  const [resumeOptions, setResumeOptions] = useState<Array<{ roomCode: string; name: string }>>([]);
 
   const { setRoomCode: setStoreRoomCode, setCurrentPlayer } = useGameStore();
+
+  useEffect(() => {
+    // Prefill last used name if available
+    const lastName = localStorage.getItem('impostor_last_name');
+    if (lastName) setPlayerName(lastName);
+
+    // Gather recent rooms for simple resume list
+    const tokens = JSON.parse(localStorage.getItem('impostor_tokens') || '{}');
+    const options: Array<{ roomCode: string; name: string }> = [];
+    Object.keys(tokens).forEach((code) => {
+      const entry = tokens[code];
+      if (entry?.player?.name) {
+        options.push({ roomCode: code, name: entry.player.name });
+      }
+    });
+    setResumeOptions(options.slice(0, 5));
+
+    // Proactively prune ended/deleted rooms from resume list
+    (async () => {
+      const updatedTokens = { ...tokens };
+      await Promise.all(
+        Object.keys(tokens).map(async (code) => {
+          const entry = tokens[code];
+          if (!entry?.token) {
+            delete updatedTokens[code];
+            return;
+          }
+          try {
+            const res = await fetch(`/api/room/${code}`, {
+              headers: { Authorization: `Bearer ${entry.token}` },
+            });
+            if (res.status === 404 || res.status === 410) {
+              delete updatedTokens[code];
+            }
+          } catch {
+            // Network errors: keep entry; it may be transient
+          }
+        })
+      );
+      localStorage.setItem('impostor_tokens', JSON.stringify(updatedTokens));
+      const refreshed: Array<{ roomCode: string; name: string }> = [];
+      Object.keys(updatedTokens).forEach((code) => {
+        const entry = updatedTokens[code];
+        if (entry?.player?.name) {
+          refreshed.push({ roomCode: code, name: entry.player.name });
+        }
+      });
+      setResumeOptions(refreshed.slice(0, 5));
+    })();
+  }, []);
+
+  function getOrCreateDeviceId() {
+    let id = localStorage.getItem('impostor_device_id');
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem('impostor_device_id', id);
+    }
+    return id;
+  }
 
   const handleCreateRoom = async () => {
     if (!playerName.trim()) {
@@ -33,7 +93,7 @@ export default function HomePage() {
       const response = await fetch('/api/room/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: playerName.trim() }),
+        body: JSON.stringify({ name: playerName.trim(), deviceId: getOrCreateDeviceId() }),
       });
 
       const data = await response.json();
@@ -46,8 +106,12 @@ export default function HomePage() {
       setStoreRoomCode(data.roomCode);
       setCurrentPlayer(data.player, data.token);
 
-      // Store token in localStorage
+      // Store token in localStorage and cache per-room token
       localStorage.setItem('impostor_token', data.token);
+      localStorage.setItem('impostor_last_name', playerName.trim());
+      const tokens = JSON.parse(localStorage.getItem('impostor_tokens') || '{}');
+      tokens[data.roomCode] = { token: data.token, player: data.player, updatedAt: Date.now() };
+      localStorage.setItem('impostor_tokens', JSON.stringify(tokens));
 
       // Navigate to room
       router.push(`/room/${data.roomCode}`);
@@ -78,7 +142,8 @@ export default function HomePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           roomCode: roomCode.trim().toUpperCase(), 
-          name: playerName.trim() 
+          name: playerName.trim(),
+          deviceId: getOrCreateDeviceId(),
         }),
       });
 
@@ -92,8 +157,12 @@ export default function HomePage() {
       setStoreRoomCode(data.roomCode);
       setCurrentPlayer(data.player, data.token);
 
-      // Store token in localStorage
+      // Store token in localStorage and cache per-room token
       localStorage.setItem('impostor_token', data.token);
+      localStorage.setItem('impostor_last_name', playerName.trim());
+      const tokens = JSON.parse(localStorage.getItem('impostor_tokens') || '{}');
+      tokens[data.roomCode] = { token: data.token, player: data.player, updatedAt: Date.now() };
+      localStorage.setItem('impostor_tokens', JSON.stringify(tokens));
 
       // Navigate to room
       router.push(`/room/${data.roomCode}`);
@@ -165,6 +234,56 @@ export default function HomePage() {
 
         {/* Action Cards */}
         <div className="space-y-4">
+          {/* Resume recent rooms */}
+          {resumeOptions.length > 0 && (
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7, duration: 0.4 }}>
+              <Card className="hover:bg-card/80 transition-colors">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-3 text-lg">
+                    <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                      <Users className="w-5 h-5 text-green-500" />
+                    </div>
+                    Resume
+                  </CardTitle>
+                  <CardDescription>
+                    Quick rejoin for your recent rooms
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-1 gap-2">
+                    {resumeOptions.map(opt => (
+                      <Button key={opt.roomCode} variant="secondary" className="justify-between" onClick={async () => {
+                        const tokens = JSON.parse(localStorage.getItem('impostor_tokens') || '{}');
+                        const entry = tokens[opt.roomCode];
+                        if (entry?.token) {
+                          // Probe if room still exists and not ended
+                          try {
+                            const res = await fetch(`/api/room/${opt.roomCode}`, { headers: { Authorization: `Bearer ${entry.token}` } });
+                            if (res.ok) {
+                              localStorage.setItem('impostor_token', entry.token);
+                              router.push(`/room/${opt.roomCode}`);
+                              return;
+                            }
+                            // If 404/410, drop from recent
+                            if (res.status === 404 || res.status === 410) {
+                              delete tokens[opt.roomCode];
+                              localStorage.setItem('impostor_tokens', JSON.stringify(tokens));
+                              setResumeOptions(Object.keys(tokens).map((code) => ({ roomCode: code, name: tokens[code].player?.name || '' })));
+                              return;
+                            }
+                          } catch {}
+                        }
+                        setRoomCode(opt.roomCode);
+                      }}>
+                        <span className="font-mono">{opt.roomCode}</span>
+                        <span className="text-muted-foreground">{opt.name}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
           {/* Create Room */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}

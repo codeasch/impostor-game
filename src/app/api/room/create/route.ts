@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret-key';
 
 export async function POST(request: NextRequest) {
   try {
-    const { name } = await request.json();
+    const { name, deviceId } = await request.json();
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
         is_host: true,
         connected: true,
         avatar_seed: generateAvatarSeed(),
+        device_id: deviceId && typeof deviceId === 'string' ? deviceId : null,
       })
       .select()
       .single();

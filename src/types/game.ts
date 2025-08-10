@@ -29,6 +29,9 @@ export interface Player {
   connected: boolean;
   joined_at: string;
   avatar_seed?: string;
+  device_id?: string;
+  kicked?: boolean;
+  kicked_at?: string;
 }
 
 export interface Round {

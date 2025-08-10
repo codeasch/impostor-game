@@ -12,6 +12,7 @@ import { DiscussView } from '@/components/game/discuss-view';
 import { VoteView } from '@/components/game/vote-view';
 import { ResultView } from '@/components/game/result-view';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { KickedModal } from '@/components/ui/kicked-modal';
 import type { Player } from '@/types/game';
 
 export default function RoomPage() {
@@ -37,6 +38,7 @@ export default function RoomPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
+  const [kicked, setKicked] = useState(false);
 
   // Initialize room and realtime connection
   useEffect(() => {
@@ -44,10 +46,34 @@ export default function RoomPage() {
 
     const initializeRoom = async () => {
       try {
-        // Check if we have a valid token
-        const token = localStorage.getItem('impostor_token');
+        // Check if we have a valid token; if not, try rejoin via deviceId
+        let token = localStorage.getItem('impostor_token');
         if (!token) {
-          console.log('No token found, redirecting to home');
+          const deviceId = localStorage.getItem('impostor_device_id');
+          if (deviceId) {
+            const resp = await fetch('/api/room/rejoin', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ roomCode: roomCode.toUpperCase(), deviceId }),
+            });
+            if (resp.status === 403) {
+              setKicked(true);
+              setIsLoading(false);
+              return;
+            }
+            if (resp.ok) {
+              const data = await resp.json();
+              token = data.token;
+              localStorage.setItem('impostor_token', token);
+              // Update token cache for this room
+              const tokens = JSON.parse(localStorage.getItem('impostor_tokens') || '{}');
+              tokens[roomCode.toUpperCase()] = { token: data.token, player: data.player, updatedAt: Date.now() };
+              localStorage.setItem('impostor_tokens', JSON.stringify(tokens));
+            }
+          }
+        }
+        if (!token) {
+          console.log('No token or rejoin available, redirecting to home');
           router.push('/');
           return;
         }
@@ -75,6 +101,13 @@ export default function RoomPage() {
         setRoom(roomData);
         setPlayers(playersData || []);
         setCurrentPlayer(currentPlayer);
+        // Ensure this client shows as connected right away
+        try {
+          await fetch('/api/presence/heartbeat', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('impostor_token')}` } });
+        } catch {}
+        if (currentPlayer?.kicked) {
+          setKicked(true);
+        }
         setGameStatus(roomData.status);
 
         // Simplified realtime setup - focus on polling for now
@@ -97,6 +130,20 @@ export default function RoomPage() {
         // Don't wait for realtime subscription
         setIsLoading(false);
 
+        // Start heartbeat to maintain presence
+        const heartbeat = setInterval(async () => {
+          try {
+            await fetch('/api/presence/heartbeat', {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}` },
+              keepalive: true,
+            });
+          } catch (e) {
+            // best effort
+          }
+        }, 25000);
+        (realtimeChannel as any).heartbeat = heartbeat;
+
         // Add more frequent polling for better responsiveness
         let previousStatus = gameStatus;
         const pollUpdates = setInterval(async () => {
@@ -109,9 +156,12 @@ export default function RoomPage() {
             });
             
             if (response.ok) {
-              const { room: updatedRoom, players: updatedPlayers } = await response.json();
+              const { room: updatedRoom, players: updatedPlayers, currentPlayer: me } = await response.json();
               setRoom(updatedRoom);
               setPlayers(updatedPlayers);
+              if (me?.kicked) {
+                setKicked(true);
+              }
               
               // Check if status changed to REVEAL - preload assignment
               if (previousStatus !== 'REVEAL' && updatedRoom.status === 'REVEAL') {
@@ -144,6 +194,14 @@ export default function RoomPage() {
               
               previousStatus = updatedRoom.status;
               setGameStatus(updatedRoom.status);
+            } else if (response.status === 404 || response.status === 410) {
+              // Room ended/deleted; redirect to home
+              try {
+                if ((realtimeChannel as any).pollInterval) clearInterval((realtimeChannel as any).pollInterval);
+                if ((realtimeChannel as any).heartbeat) clearInterval((realtimeChannel as any).heartbeat);
+              } catch {}
+              setIsLoading(false);
+              router.push('/');
             }
           } catch (error) {
             console.error('Error polling updates:', error);
@@ -168,6 +226,9 @@ export default function RoomPage() {
         if ((channel as any).pollInterval) {
           clearInterval((channel as any).pollInterval);
         }
+        if ((channel as any).heartbeat) {
+          clearInterval((channel as any).heartbeat);
+        }
         channel.unsubscribe();
       }
     };
@@ -186,9 +247,18 @@ export default function RoomPage() {
   // Handle browser back/close
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (channel) {
-        channel.unsubscribe();
-      }
+      try {
+        const token = localStorage.getItem('impostor_token');
+        if (token) {
+          // Best-effort heartbeat with keepalive to mark recent presence
+          fetch('/api/presence/heartbeat', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            keepalive: true,
+          }).catch(() => {});
+        }
+      } catch {}
+      if (channel) channel.unsubscribe();
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -200,6 +270,14 @@ export default function RoomPage() {
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
+    );
+  }
+
+  if (kicked) {
+    return (
+      <>
+        <KickedModal open={true} />
+      </>
     );
   }
 
