@@ -410,7 +410,7 @@ export default function HomePage() {
               </motion.div>
 
               <div className="mt-4 rounded-md border border-border/60 bg-background/60 p-3 text-xs text-muted-foreground">
-                Tip: Keep hints short and subtle. Don’t say the word. Impostor — blend in.
+                Tip: Keep hints short and subtle. Don’t say the word.
               </div>
             </CardContent>
           </Card>

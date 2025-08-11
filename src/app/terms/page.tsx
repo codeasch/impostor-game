@@ -31,7 +31,7 @@ export default function TermsPage() {
           <CardContent className="prose prose-invert max-w-none prose-p:leading-relaxed prose-li:leading-relaxed">
             <section className="space-y-4 text-sm">
               <p>
-                These Terms of Service ("Terms") govern your use of the Impostor game and related services ("Service"). By accessing
+                These Terms of Service (&quot;Terms&quot;) govern your use of the Impostor game and related services (&quot;Service&quot;). By accessing
                 or using the Service, you agree to be bound by these Terms. If you do not agree, do not use the Service.
               </p>
             </section>
@@ -82,7 +82,7 @@ export default function TermsPage() {
             <section className="mt-6 space-y-3 text-sm">
               <h2 className="text-base font-semibold">8. Disclaimers</h2>
               <p>
-                THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE.
+                THE SERVICE IS PROVIDED ON AN &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; BASIS WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE.
               </p>
             </section>
             <section className="mt-6 space-y-3 text-sm">
@@ -94,7 +94,7 @@ export default function TermsPage() {
             <section className="mt-6 space-y-3 text-sm">
               <h2 className="text-base font-semibold">10. Indemnification</h2>
               <p>
-                You agree to defend, indemnify, and hold us harmless from and against any and all claims, liabilities, damages, losses, and expenses, including reasonable attorney's fees, arising out of or in any way connected with your access to or use of the Service or your violation of these Terms.
+                You agree to defend, indemnify, and hold us harmless from and against any and all claims, liabilities, damages, losses, and expenses, including reasonable attorney&apos;s fees, arising out of or in any way connected with your access to or use of the Service or your violation of these Terms.
               </p>
             </section>
             <section className="mt-6 space-y-3 text-sm">
