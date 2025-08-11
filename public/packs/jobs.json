@@ -1,0 +1,28 @@
+{
+  "name": "Jobs & Professions",
+  "description": "Common jobs and workplaces",
+  "words": [
+    "teacher","student","principal","librarian","coach","tutor","counselor","researcher","scientist","doctor",
+    "nurse","surgeon","paramedic","dentist","pharmacist","therapist","psychologist","veterinarian","engineer","architect",
+    "designer","technician","developer","programmer","builder","plumber","electrician","carpenter","mechanic","welder",
+    "driver","bus driver","truck driver","pilot","captain","sailor","fisherman","farmer","gardener","florist",
+    "chef","cook","baker","butcher","barista","bartender","server","host","cashier","clerk",
+    "police","detective","sheriff","firefighter","soldier","security guard","lifeguard","judge","lawyer","paralegal",
+    "accountant","banker","teller","advisor","analyst","sales","marketer","manager","boss","assistant",
+    "artist","painter","photographer","filmmaker","actor","musician","dancer","writer","journalist","editor",
+    "real estate agent","broker","appraiser","inspector","construction worker","site manager","foreman","teacher aide","social worker","caregiver",
+    "babysitter","nanny","translator","interpreter","tour guide","travel agent","flight attendant","zookeeper","trainer","coach"
+  ],
+  "close_pairs": {
+    "teacher": ["tutor","student"],
+    "doctor": ["nurse","surgeon"],
+    "engineer": ["architect","technician"],
+    "developer": ["programmer","designer"],
+    "lawyer": ["judge","paralegal"],
+    "chef": ["cook","baker"],
+    "farmer": ["gardener","florist"],
+    "writer": ["journalist","editor"],
+    "pilot": ["captain","flight attendant"],
+    "police": ["detective","sheriff"]
+  }
+}

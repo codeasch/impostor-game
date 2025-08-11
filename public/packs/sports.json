@@ -1,0 +1,28 @@
+{
+  "name": "Sports",
+  "description": "Popular games, teams, and gear",
+  "words": [
+    "soccer","football","basketball","baseball","hockey","tennis","golf","volleyball","rugby","cricket",
+    "swimming","running","cycling","skiing","snowboarding","skating","surfing","boxing","wrestling","karate",
+    "coach","referee","team","player","captain","opponent","fan","cheerleader","mascot","stadium",
+    "arena","court","field","pitch","track","goal","net","hoop","bench","locker room",
+    "ball","bat","glove","helmet","pads","cleats","jersey","whistle","scoreboard","timer",
+    "tournament","league","season","match","game","set","point","overtime","playoff","championship",
+    "serve","pass","shoot","tackle","block","save","assist","dribble","kick","throw",
+    "goalkeeper","striker","defender","midfielder","forward","center","guard","umpire","manager","trainer",
+    "gold","silver","bronze","podium","anthem","home","away","underdog","favorite","record",
+    "world cup","olympics","super bowl","world series","nba finals","stanley cup","wimbledon","us open","tour de france","boston marathon"
+  ],
+  "close_pairs": {
+    "soccer": ["football","goal"],
+    "basketball": ["hoop","dribble"],
+    "tennis": ["serve","set"],
+    "golf": ["club","hole"],
+    "boxing": ["wrestling","karate"],
+    "coach": ["manager","trainer"],
+    "referee": ["umpire","whistle"],
+    "stadium": ["arena","court"],
+    "helmet": ["pads","glove"],
+    "goal": ["net","save"]
+  }
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Timer, Users, Package, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,30 +13,46 @@ interface SettingsPanelProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const WORD_PACKS = [
+interface WordPackMeta { id: string; name: string; description: string }
+
+const DEFAULT_WORD_PACKS: WordPackMeta[] = [
+  { id: 'random', name: 'Random (All Packs)', description: 'Mixed bag from every category' },
   { id: 'classic', name: 'Classic', description: 'Everyday objects and concepts' },
   { id: 'animals', name: 'Animals', description: 'Creatures from around the world' },
   { id: 'food', name: 'Food & Drinks', description: 'Culinary delights and beverages' },
   { id: 'places', name: 'Places', description: 'Cities, landmarks, and locations' },
   { id: 'movies', name: 'Movies & TV', description: 'Entertainment and pop culture' },
-];
-
-const TIMER_OPTIONS = [
-  { value: undefined, label: 'No Timer', description: 'Unlimited discussion time' },
-  { value: 180, label: '3 Minutes', description: 'Quick rounds' },
-  { value: 300, label: '5 Minutes', description: 'Standard timing' },
-  { value: 420, label: '7 Minutes', description: 'Extended discussion' },
-  { value: 600, label: '10 Minutes', description: 'Thorough analysis' },
+  { id: 'sports', name: 'Sports', description: 'Games, teams, events, and gear' },
+  { id: 'music', name: 'Music', description: 'Genres, instruments, and roles' },
+  { id: 'technology', name: 'Technology', description: 'Everyday tech and apps' },
+  { id: 'jobs', name: 'Jobs & Professions', description: 'Occupations and workplaces' },
+  { id: 'nature', name: 'Nature', description: 'Biomes, weather, and phenomena' },
+  { id: 'trending', name: 'Trending', description: 'Current events, memes, and pop culture' },
 ];
 
 export function SettingsPanel({ isOpen, onOpenChange }: SettingsPanelProps) {
   const { gameSettings, setGameSettings } = useGameStore();
   const [isSaving, setIsSaving] = useState(false);
+  const [availablePacks, setAvailablePacks] = useState<WordPackMeta[]>(DEFAULT_WORD_PACKS);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetch('/packs/index.json')
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('failed'))))
+      .then((data: WordPackMeta[]) => {
+        if (Array.isArray(data) && isMounted) setAvailablePacks(data);
+      })
+      .catch(() => {
+        // fallback already set
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // Save settings via API (this will broadcast to other players)
       const response = await fetch('/api/game/settings', {
         method: 'POST',
         headers: {
@@ -53,7 +69,6 @@ export function SettingsPanel({ isOpen, onOpenChange }: SettingsPanelProps) {
       onOpenChange(false);
     } catch (error) {
       console.error('Error saving settings:', error);
-      // Still close the panel even if broadcast failed
       onOpenChange(false);
     } finally {
       setIsSaving(false);
@@ -84,7 +99,7 @@ export function SettingsPanel({ isOpen, onOpenChange }: SettingsPanelProps) {
                   Word Pack
                 </label>
                 <div className="grid gap-2">
-                  {WORD_PACKS.map((pack) => (
+                  {availablePacks.map((pack) => (
                     <button
                       key={pack.id}
                       onClick={() => setGameSettings({ pack: pack.id })}
@@ -150,7 +165,14 @@ export function SettingsPanel({ isOpen, onOpenChange }: SettingsPanelProps) {
                   Discussion Timer
                 </label>
                 <div className="grid gap-2">
-                  {TIMER_OPTIONS.map((option) => (
+              {[
+                { value: 60, label: '1 Minute', description: 'Speed round' },
+                { value: 120, label: '2 Minutes', description: 'Short and sweet' },
+                { value: 180, label: '3 Minutes', description: 'Default timing' },
+                { value: 300, label: '5 Minutes', description: 'Standard timing' },
+                { value: 420, label: '7 Minutes', description: 'Extended discussion' },
+                { value: undefined, label: 'No Timer', description: 'Unlimited discussion time' },
+              ].map((option) => (
                     <button
                       key={option.value || 'none'}
                       onClick={() => setGameSettings({ timer_seconds: option.value })}
@@ -170,9 +192,6 @@ export function SettingsPanel({ isOpen, onOpenChange }: SettingsPanelProps) {
                 </div>
               </div>
 
-
-
-              {/* Save Button */}
               <Button
                 onClick={handleSave}
                 disabled={isSaving}

@@ -1,0 +1,34 @@
+{
+  "name": "Nature",
+  "description": "Biomes, weather, and phenomena",
+  "words": [
+    "forest","jungle","rainforest","savanna","grassland","steppe","tundra","taiga","desert","oasis",
+    "mountain","valley","canyon","cliff","plateau","mesa","butte","hill","dune","glacier",
+    "river","stream","creek","brook","waterfall","cascade","rapids","lake","pond","lagoon",
+    "ocean","sea","bay","gulf","strait","channel","reef","island","archipelago","atoll",
+    "beach","shore","coast","cliffside","cave","cavern","stalactite","stalagmite","grotto","sinkhole",
+    "volcano","crater","geyser","hot spring","fumarole","earthquake","tsunami","avalanche","landslide","mudslide",
+    "storm","thunderstorm","lightning","thunder","rain","drizzle","downpour","hail","snow","blizzard",
+    "sleet","fog","mist","haze","cloud","cumulus","stratus","cirrus","nimbus","overcast",
+    "sun","moon","star","planet","comet","meteor","asteroid","eclipse","aurora","rainbow",
+    "wind","breeze","gust","gale","hurricane","typhoon","tornado","cyclone","monsoon","zephyr",
+    "coral","kelp","mangrove","wetland","marsh","swamp","bog","fen","peat","delta",
+    "soil","sand","silt","clay","rock","granite","basalt","limestone","sandstone","shale",
+    "flower","blossom","petal","pollen","nectar","seed","sprout","bud","leaf","root",
+    "tree","oak","pine","maple","birch","willow","cedar","spruce","fir","redwood",
+    "animal","mammal","bird","fish","reptile","amphibian","insect","arachnid","crustacean","mollusk",
+    "ecosystem","habitat","biome","food chain","predator","prey","herbivore","carnivore","omnivore","decomposer"
+  ],
+  "close_pairs": {
+    "forest": ["jungle","rainforest"],
+    "desert": ["dune","oasis"],
+    "river": ["stream","creek"],
+    "ocean": ["sea","bay"],
+    "storm": ["thunderstorm","blizzard"],
+    "snow": ["sleet","hail"],
+    "cloud": ["cumulus","stratus"],
+    "sun": ["moon","star"],
+    "hurricane": ["typhoon","cyclone"],
+    "flower": ["blossom","petal"]
+  }
+}

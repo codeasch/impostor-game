@@ -27,7 +27,13 @@ A real-time multiplayer social deduction game where players try to identify the 
 - Animals
 - Food & drinks  
 - Places
-- Movies
+- Movies & TV
+- Sports
+- Music
+- Technology
+- Jobs & Professions
+- Nature
+- Trending
 
 ## 🚀 Features
 
@@ -209,6 +215,36 @@ vercel --prod
 - Set all environment variables in Vercel dashboard
 - Configure Supabase RLS policies
 - Test with production database
+
+## 📦 Adding Word Packs and Words
+
+Word packs live as JSON files in `public/packs`. Each pack has this structure:
+
+```json
+{
+  "name": "Pack Name",
+  "description": "Short description",
+  "words": ["word one", "word two", "..."],
+  "close_pairs": { "word one": ["similar a", "similar b"] }
+}
+```
+
+- `words`: recommended 100–500 items. Lowercase is fine; spaces allowed (e.g., "ice cream"). Avoid duplicates/offensive terms.
+- `close_pairs` (optional but recommended): maps a word to a few similar/confusable words used in Deception mode.
+
+To add a new category:
+1. Create a new file: `public/packs/{id}.json` (the id is the filename without extension).
+2. Add the pack metadata to `public/packs/index.json` with `{ id, name, description }`.
+3. The game auto-loads the list from `index.json` and will display it in the settings panel.
+
+To add words to an existing pack:
+- Edit its JSON file and append to the `words` array.
+- Optionally add entries to `close_pairs` for better Deception mode variety.
+
+Guidelines:
+- Prefer common nouns/phrases; keep them unambiguous.
+- Mix difficulty; include obvious and subtle items.
+- Add close pairs that are plausible confusions (e.g., "lion" ↔ "tiger").
 
 ## 🎊 Future Enhancements
 

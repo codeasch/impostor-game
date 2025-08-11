@@ -1,0 +1,28 @@
+{
+  "name": "Trending",
+  "description": "Current events, memes, and pop culture",
+  "words": [
+    "viral","meme","trend","challenge","filter","reels","shorts","duet","stitch","capcut",
+    "tiktok","instagram","youtube","x","twitter","threads","snapchat","reddit","discord","twitch",
+    "ai","chatbot","filter bubble","algorithm","for you","feed","hashtag","tag","comment","subscribe",
+    "stream","live","podcast","playlist","collab","influencer","creator","vlogger","blog","newsletter",
+    "bitcoin","crypto","nft","stock","market","interest rate","inflation","election","debate","poll",
+    "olympics","world cup","super bowl","met gala","fashion week","box office","premiere","soundtrack","remake","sequel",
+    "barbie","oppenheimer","dune","avengers","taylor swift","beyonce","drake","bad bunny","bts","blackpink",
+    "coachella","grammys","emmys","oscars","golden globes","metaverse","virtual reality","headset","console",
+    "iphone","android","app","update","beta","viral dance","fan cam","stan","ship","spoiler",
+    "streamer","speedrun","mod","skin","battle royale","open world"
+  ],
+  "close_pairs": {
+    "viral": ["trend","meme"],
+    "reels": ["shorts","tiktok"],
+    "tiktok": ["instagram","youtube"],
+    "ai": ["chatbot","algorithm"],
+    "stream": ["live","podcast"],
+    "bitcoin": ["crypto","nft"],
+    "olympics": ["world cup","super bowl"],
+    "oscars": ["emmys","grammys"],
+    "iphone": ["android","app"],
+    "buff": ["nerf","patch"]
+  }
+}

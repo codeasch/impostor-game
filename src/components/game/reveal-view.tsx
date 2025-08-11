@@ -17,13 +17,12 @@ export function RevealView() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentAssignment, setCurrentAssignment] = useState<any>(null);
 
-  // Clear stale data when component mounts
+  // Reset local UI state when component mounts, but keep any preloaded assignment
   useEffect(() => {
-    setAssignment(null); // Clear any stale assignment from store
-    setIsRevealed(false); // Reset reveal state
-    setIsReady(false); // Reset ready state
-    setGameMode(null); // Reset game mode
-  }, [setAssignment]);
+    setIsRevealed(false);
+    setIsReady(false);
+    setGameMode(null);
+  }, []);
 
   // Fetch assignment when component mounts
   useEffect(() => {

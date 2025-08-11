@@ -1,0 +1,27 @@
+{
+  "name": "Music",
+  "description": "Songs, artists, and sounds",
+  "words": [
+    "song","album","track","playlist","radio","podcast","concert","tour","ticket","stage",
+    "singer","rapper","band","dj","producer","composer","drummer","guitarist","pianist","violinist",
+    "guitar","bass","drums","piano","keyboard","violin","flute","trumpet","saxophone","microphone",
+    "speaker","headphones","amp","mixer","record","vinyl","cd","cassette","stream","download",
+    "beat","melody","lyrics","chorus","verse","hook","solo","riff","duet","cover",
+    "pop","rock","hip hop","rap","r&b","soul","funk","disco","country","jazz",
+    "blues","metal","punk","indie","electronic","dance","edm","techno","house","classical",
+    "opera","folk","latin","reggaeton","kpop","jpop","afrobeats","reggae","salsa","lofi",
+    "spotify","apple music","youtube","tiktok","soundcloud","bandcamp","microphone stand","setlist","encore","merch"
+  ],
+  "close_pairs": {
+    "song": ["track","cover"],
+    "album": ["playlist","record"],
+    "guitar": ["bass","ukulele"],
+    "drums": ["beat","percussion"],
+    "piano": ["keyboard","synth"],
+    "pop": ["rock","indie"],
+    "dj": ["producer","remix"],
+    "concert": ["tour","stage"],
+    "stream": ["download","radio"],
+    "lyrics": ["chorus","verse"]
+  }
+}

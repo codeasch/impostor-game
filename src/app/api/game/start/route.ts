@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { pickRandomItems, shuffleArray } from '@/lib/utils';
+import { shuffleArray } from '@/lib/utils';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret-key';
@@ -13,13 +13,57 @@ interface GameSettings {
   clue_rounds: number;
 }
 
+function normalizeWord(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  return trimmed.toLowerCase();
+}
+
 async function loadWordPack(packId: string): Promise<any> {
   try {
     const fs = await import('fs');
     const path = await import('path');
-    const packPath = path.join(process.cwd(), 'public', 'packs', `${packId}.json`);
-    const packData = fs.readFileSync(packPath, 'utf8');
-    return JSON.parse(packData);
+    if (packId === 'random') {
+      // Aggregate all packs
+      const indexPath = path.join(process.cwd(), 'public', 'packs', 'index.json');
+      const indexData = JSON.parse(fs.readFileSync(indexPath, 'utf8')) as Array<{ id: string }>;
+      const uniqueWordsSet = new Set<string>();
+      const aggregated: string[] = [];
+      for (const meta of indexData) {
+        if (!meta?.id || meta.id === 'random') continue;
+        try {
+          const pPath = path.join(process.cwd(), 'public', 'packs', `${meta.id}.json`);
+          const pRaw = JSON.parse(fs.readFileSync(pPath, 'utf8'));
+          for (const w of pRaw.words || []) {
+            const normalized = normalizeWord(w);
+            if (normalized && !uniqueWordsSet.has(normalized)) {
+              uniqueWordsSet.add(normalized);
+              aggregated.push(normalized);
+            }
+          }
+        } catch {}
+      }
+      return { name: 'Random', description: 'All packs mixed', words: aggregated, close_pairs: {} };
+    } else {
+      const packPath = path.join(process.cwd(), 'public', 'packs', `${packId}.json`);
+      const packData = fs.readFileSync(packPath, 'utf8');
+      const rawPack = JSON.parse(packData);
+      // Deduplicate and sanitize words server-side
+      const uniqueWordsSet = new Set<string>();
+      const sanitizedWords: string[] = [];
+      for (const w of rawPack.words || []) {
+        const normalized = normalizeWord(w);
+        if (normalized && !uniqueWordsSet.has(normalized)) {
+          uniqueWordsSet.add(normalized);
+          sanitizedWords.push(normalized);
+        }
+      }
+      return {
+        ...rawPack,
+        words: sanitizedWords,
+      };
+    }
   } catch (error) {
     console.error('Error loading word pack:', error);
     // Fallback to basic words
@@ -92,9 +136,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Too many impostors for player count' }, { status: 400 });
     }
 
-    // Load word pack
+    // Load word pack (deduped/sanitized)
     const pack = await loadWordPack(settings.pack);
-    const crewWord = pack.words[Math.floor(Math.random() * pack.words.length)];
+
+    // Fetch last round to avoid immediate repeats, best-effort
+    let lastCrewWord: string | null = null;
+    if (room.current_round && room.current_round > 0) {
+      const { data: lastRound } = await supabaseAdmin
+        .from('rounds')
+        .select('crew_word')
+        .eq('room_code', room_code)
+        .eq('round_number', room.current_round)
+        .single();
+      lastCrewWord = lastRound?.crew_word ? String(lastRound.crew_word).toLowerCase() : null;
+    }
+
+    // Pick a word, avoid last round's crew word if possible
+    let crewWord = pack.words[Math.floor(Math.random() * pack.words.length)];
+    if (pack.words.length > 1 && lastCrewWord) {
+      let attempts = 0;
+      while (crewWord === lastCrewWord && attempts < 5) {
+        crewWord = pack.words[Math.floor(Math.random() * pack.words.length)];
+        attempts++;
+      }
+    }
     const impostorWord = settings.mode === 'DECEPTION' 
       ? getCloseWord(crewWord, pack) 
       : '?';

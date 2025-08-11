@@ -1,0 +1,14 @@
+[
+  { "id": "random", "name": "Random (All Packs)", "description": "Mixed bag from every category" },
+  { "id": "classic", "name": "Classic", "description": "Everyday objects and concepts" },
+  { "id": "animals", "name": "Animals", "description": "Creatures from around the world" },
+  { "id": "food", "name": "Food & Drinks", "description": "Culinary delights and beverages" },
+  { "id": "places", "name": "Places", "description": "Cities, landmarks, and locations" },
+  { "id": "movies", "name": "Movies & TV", "description": "Entertainment and pop culture" },
+  { "id": "sports", "name": "Sports", "description": "Games, teams, events, and gear" },
+  { "id": "music", "name": "Music", "description": "Genres, instruments, and roles" },
+  { "id": "technology", "name": "Technology", "description": "Everyday tech and apps" },
+  { "id": "jobs", "name": "Jobs & Professions", "description": "Occupations and workplaces" },
+  { "id": "nature", "name": "Nature", "description": "Biomes, weather, and phenomena" },
+  { "id": "trending", "name": "Trending", "description": "Current events, memes, and pop culture" }
+]

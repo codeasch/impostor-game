@@ -1,0 +1,29 @@
+{
+  "name": "Technology",
+  "description": "Everyday tech and apps",
+  "words": [
+    "computer","laptop","tablet","phone","smartphone","charger","battery","screen","camera","video",
+    "photo","selfie","headphones","earbuds","speaker","microphone","tv","smart tv","game console","controller",
+    "keyboard","mouse","printer","scanner","remote","cable","usb","charger cable","power outlet","wifi",
+    "bluetooth","internet","website","app","browser","tab","link","search","map","gps",
+    "email","password","username","message","text","chat","call","voicemail","contact"," ringtone",
+    "alarm","clock","calendar","note","calculator","timer","stopwatch","flashlight","weather","news",
+    "download","upload","file","folder","storage","memory","screenshot","wallpaper","lock screen","home screen",
+    "settings","update","backup","cloud","account","profile","avatar","qr code","barcode","scan",
+    "hotspot","airplane mode","wallet","payment","tap","swipe","face id","touch id","fingerprint","security",
+    "emoji","sticker","hashtag","post","story","reel","shorts","live","stream","podcast",
+    "playlist","music","song","video call","group chat","share","like","comment","subscribe","follow"
+  ],
+  "close_pairs": {
+    "computer": ["laptop","tablet"],
+    "phone": ["smartphone","tablet"],
+    "wifi": ["internet","hotspot"],
+    "email": ["message","chat"],
+    "password": ["username","account"],
+    "photo": ["video","selfie"],
+    "download": ["upload","file"],
+    "post": ["story","share"],
+    "like": ["comment","subscribe"],
+    "camera": ["photo","video"]
+  }
+}
