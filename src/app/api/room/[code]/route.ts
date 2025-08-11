@@ -52,6 +52,13 @@ export async function GET(
       return NextResponse.json({ error: 'Failed to load players' }, { status: 500 });
     }
 
+    // Fetch persisted room settings (if present)
+    const { data: settingsRow } = await supabaseAdmin
+      .from('room_settings')
+      .select('*')
+      .eq('room_code', roomCode)
+      .maybeSingle?.() ?? { data: null } as any;
+
     // Get current player
     const currentPlayer = players?.find(p => p.id === player_id);
     if (!currentPlayer) {
@@ -63,7 +70,7 @@ export async function GET(
       return NextResponse.json({ room, players: players || [], currentPlayer });
     }
 
-    return NextResponse.json({ room, players: players || [], currentPlayer });
+    return NextResponse.json({ room, players: players || [], currentPlayer, settings: settingsRow || null });
   } catch (error) {
     console.error('Error fetching room:', error);
     return NextResponse.json({ 

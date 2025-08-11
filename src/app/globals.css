@@ -102,3 +102,9 @@
   animation: spin 1s linear infinite;
 }
 
+/* Smooth linear countdown animation for progress bars */
+@keyframes shrinkX {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+

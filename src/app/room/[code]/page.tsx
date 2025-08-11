@@ -32,6 +32,10 @@ export default function RoomPage() {
     setGameSettings,
     setAssignment,
     setIsConnected,
+    setVotes,
+    setHasVoted,
+    setSelectedPlayer,
+    setGameResult,
     resetGame,
   } = useGameStore();
 
@@ -46,6 +50,16 @@ export default function RoomPage() {
 
     const initializeRoom = async () => {
       try {
+        // Reset view-specific state on room change
+        setRoom(null);
+        setPlayers([]);
+        setAssignment(null);
+        setGameStatus('LOBBY');
+        setVotes({});
+        setHasVoted(false);
+        setSelectedPlayer(null);
+        setGameResult(null);
+        // Do not reset gameSettings; will be overridden by server below
         // Check if we have a valid token; if not, try rejoin via deviceId
         let token = localStorage.getItem('impostor_token');
         if (!token) {
@@ -98,12 +112,14 @@ export default function RoomPage() {
           return;
         }
 
-        const { room: roomData, players: playersData, currentPlayer } = await roomResponse.json();
+        const { room: roomData, players: playersData, currentPlayer, settings } = await roomResponse.json();
         console.log('Room data loaded:', roomData, playersData, currentPlayer);
 
         setRoom(roomData);
         setPlayers(playersData || []);
         setCurrentPlayer(currentPlayer);
+        // Always apply server settings (fallback to defaults on API side)
+        setGameSettings(settings || {});
         // Ensure this client shows as connected right away
         try {
           await fetch('/api/presence/heartbeat', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('impostor_token')}` } });
@@ -270,8 +286,13 @@ export default function RoomPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
+      <div className="relative min-h-screen overflow-hidden">
+        <div className="absolute inset-0 bg-grid pointer-events-none opacity-[0.25]" />
+        <div className="absolute -top-24 -left-24 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-primary/30 via-primary/0 to-accent/20 blur-3xl" />
+        <div className="absolute -bottom-32 -right-24 h-[460px] w-[460px] rounded-full bg-gradient-to-tr from-accent/25 via-accent/0 to-primary/20 blur-3xl" />
+        <div className="relative z-10 min-h-screen flex items-center justify-center">
+          <LoadingSpinner size="lg" />
+        </div>
       </div>
     );
   }
@@ -286,17 +307,22 @@ export default function RoomPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 space-y-4">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-destructive">Error</h1>
-          <p className="text-muted-foreground">{error}</p>
+      <div className="relative min-h-screen overflow-hidden">
+        <div className="absolute inset-0 bg-grid pointer-events-none opacity-[0.25]" />
+        <div className="absolute -top-24 -left-24 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-primary/30 via-primary/0 to-accent/20 blur-3xl" />
+        <div className="absolute -bottom-32 -right-24 h-[460px] w-[460px] rounded-full bg-gradient-to-tr from-accent/25 via-accent/0 to-primary/20 blur-3xl" />
+        <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 space-y-4">
+          <div className="text-center space-y-2">
+            <h1 className="text-2xl font-bold text-destructive">Error</h1>
+            <p className="text-muted-foreground">{error}</p>
+          </div>
+          <button
+            onClick={() => router.push('/')}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Back to Home
+          </button>
         </div>
-        <button
-          onClick={() => router.push('/')}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          Back to Home
-        </button>
       </div>
     );
   }
@@ -310,16 +336,20 @@ export default function RoomPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <GameHeader />
-      
-      <main className="pb-safe">
-        {gameStatus === 'LOBBY' && <LobbyView />}
-        {gameStatus === 'REVEAL' && <RevealView />}
-        {gameStatus === 'DISCUSS' && <DiscussView />}
-        {gameStatus === 'VOTE' && <VoteView />}
-        {gameStatus === 'REVEAL_RESULT' && <ResultView />}
-      </main>
+    <div className="relative min-h-screen overflow-hidden">
+      <div className="absolute inset-0 bg-grid pointer-events-none opacity-[0.25]" />
+      <div className="absolute -top-24 -left-24 h-[420px] w-[420px] rounded-full bg-gradient-to-br from-primary/30 via-primary/0 to-accent/20 blur-3xl" />
+      <div className="absolute -bottom-32 -right-24 h-[460px] w-[460px] rounded-full bg-gradient-to-tr from-accent/25 via-accent/0 to-primary/20 blur-3xl" />
+      <div className="relative z-10 min-h-screen">
+        <GameHeader />
+        <main className="pb-safe">
+          {gameStatus === 'LOBBY' && <LobbyView />}
+          {gameStatus === 'REVEAL' && <RevealView />}
+          {gameStatus === 'DISCUSS' && <DiscussView />}
+          {gameStatus === 'VOTE' && <VoteView />}
+          {gameStatus === 'REVEAL_RESULT' && <ResultView />}
+        </main>
+      </div>
     </div>
   );
 }

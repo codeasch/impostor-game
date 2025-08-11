@@ -6,7 +6,7 @@ import { Vote, Check, X, Users, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameStore } from '@/stores/game-store';
-import { getPlayerInitials, formatTime } from '@/lib/utils';
+import { getPlayerInitials, formatTime, getPlayerColorWithHostOverride } from '@/lib/utils';
 
 export function VoteView() {
   const { 
@@ -24,6 +24,7 @@ export function VoteView() {
 
   const connectedPlayers = players.filter(p => p.connected);
   const votablePlayers = connectedPlayers.filter(p => p.id !== currentPlayer?.id);
+  
 
   // 40-second voting timer
   useEffect(() => {
@@ -138,7 +139,7 @@ export function VoteView() {
   const allVoted = totalVotes >= totalPlayers;
 
   return (
-    <div className="p-4 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -157,7 +158,7 @@ export function VoteView() {
         animate={{ opacity: 1, scale: 1 }}
         className="text-center"
       >
-        <Card className="bg-gradient-to-br from-destructive/10 to-orange/10 border-destructive/20">
+        <Card className="bg-card/60 backdrop-blur-xl border-border/60">
           <CardContent className="p-6">
             <div className="flex items-center justify-center gap-3 mb-2">
               <Clock className="w-6 h-6 text-destructive" />
@@ -168,13 +169,11 @@ export function VoteView() {
             <p className="text-sm text-muted-foreground">Voting time remaining</p>
             
             {/* Progress bar */}
-            <div className="w-full bg-secondary/30 rounded-full h-2 mt-4">
+            <div className="w-full bg-secondary/30 rounded-full h-2 mt-4 overflow-hidden">
               <motion.div
                 className="bg-destructive h-2 rounded-full"
                 initial={{ width: '100%' }}
-                animate={{ 
-                  width: `${(timeRemaining / 40) * 100}%` 
-                }}
+                animate={{ width: `${(timeRemaining / 40) * 100}%` }}
                 transition={{ duration: 0.5 }}
               />
             </div>
@@ -183,7 +182,7 @@ export function VoteView() {
       </motion.div>
 
       {/* Voting Progress */}
-      <Card>
+      <Card className="bg-card/60 backdrop-blur-xl border-border/60">
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -219,13 +218,17 @@ export function VoteView() {
       </Card>
 
       {/* Player Grid */}
-      <Card>
+      <Card className="bg-card/60 backdrop-blur-xl border-border/60">
         <CardHeader>
           <CardTitle>Select a Player to Vote Out</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {votablePlayers.map((player, index) => (
+            {votablePlayers.map((player, index) => {
+              const palette = getPlayerColorWithHostOverride(player.id, !!player.is_host);
+              const tile = `bg-gradient-to-br ${palette.tile}`;
+              const nameText = palette.text || '';
+              return (
               <motion.button
                 key={player.id}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -238,20 +241,20 @@ export function VoteView() {
                     ? 'border-primary bg-primary/10'
                     : hasVoted
                     ? 'border-border/50 opacity-50 cursor-not-allowed'
-                    : 'border-border hover:bg-secondary/50'
+                    : `border-border hover:bg-secondary/50 ${tile}`
                 }`}
               >
                 <div className="flex items-center gap-3">
                   {/* Avatar */}
-                  <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-sm font-medium text-primary">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-black/30 border border-white/10">
+                    <span className="text-sm font-medium">
                       {getPlayerInitials(player.name)}
                     </span>
                   </div>
 
                   {/* Player Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{player.name}</div>
+                    <div className={`font-medium truncate ${nameText}`}>{player.name}</div>
                     <div className="text-sm text-muted-foreground">
                       Secret ballot
                     </div>
@@ -269,7 +272,7 @@ export function VoteView() {
                   )}
                 </div>
               </motion.button>
-            ))}
+            );})}
           </div>
         </CardContent>
       </Card>
@@ -324,7 +327,7 @@ export function VoteView() {
       </div>
 
       {/* Voting Rules */}
-      <Card>
+      <Card className="bg-card/60 backdrop-blur-xl border-border/60">
         <CardContent className="p-4">
           <h3 className="font-semibold mb-3 flex items-center gap-2">
             <Users className="w-4 h-4" />

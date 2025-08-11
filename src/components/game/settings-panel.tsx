@@ -82,9 +82,9 @@ export function SettingsPanel({ isOpen, onOpenChange }: SettingsPanelProps) {
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.25, type: 'spring', stiffness: 200, damping: 24 }}
         >
-          <Card>
+          <Card className="bg-card/60 backdrop-blur-xl border-border/60">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="w-5 h-5" />

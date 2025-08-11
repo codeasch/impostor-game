@@ -6,7 +6,7 @@ import { Crown, Users, RotateCcw, LogOut, Package, Power } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameStore } from '@/stores/game-store';
-import { getPlayerInitials } from '@/lib/utils';
+import { getPlayerInitials, getPlayerColorWithHostOverride } from '@/lib/utils';
 
 interface GameResult {
   impostorIds: string[];
@@ -68,6 +68,16 @@ export function ResultView() {
 
   const { impostorIds, crewWord, win, voteCounts, mostVotedPlayer } = gameResult;
   const impostors = players.filter(p => impostorIds.includes(p.id));
+  const colorPalette = [
+    'from-fuchsia-500/25 to-fuchsia-500/10 border-fuchsia-500/30 text-fuchsia-300',
+    'from-sky-500/25 to-sky-500/10 border-sky-500/30 text-sky-300',
+    'from-emerald-500/25 to-emerald-500/10 border-emerald-500/30 text-emerald-300',
+    'from-amber-500/25 to-amber-500/10 border-amber-500/30 text-amber-300',
+    'from-violet-500/25 to-violet-500/10 border-violet-500/30 text-violet-300',
+    'from-rose-500/25 to-rose-500/10 border-rose-500/30 text-rose-300',
+    'from-cyan-500/25 to-cyan-500/10 border-cyan-500/30 text-cyan-300',
+    'from-lime-500/25 to-lime-500/10 border-lime-500/30 text-lime-300',
+  ];
   const innocentWon = win === 'INNOCENT';
 
   // Vote results are already calculated in the API
@@ -159,36 +169,9 @@ export function ResultView() {
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 max-w-5xl mx-auto space-y-6">
       {/* Win/Loss Animation */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6 }}
-        className="text-center space-y-4"
-      >
-        <motion.div
-          animate={innocentWon ? { rotate: [0, 10, -10, 0] } : { x: [-5, 5, -5, 0] }}
-          transition={{ duration: 0.5, repeat: 2 }}
-          className={`text-6xl`}
-        >
-          {innocentWon ? '🎉' : '💀'}
-        </motion.div>
-        
-        <div className="space-y-2">
-          <h1 className={`text-3xl font-bold ${
-            innocentWon ? 'text-green-500' : 'text-destructive'
-          }`}>
-            {innocentWon ? 'Innocent Wins!' : 'Impostors Win!'}
-          </h1>
-          <p className="text-muted-foreground">
-            {innocentWon 
-              ? 'The impostors have been found!'
-              : 'The impostors successfully deceived everyone!'
-            }
-          </p>
-        </div>
-      </motion.div>
+      <DramaticReveal innocentWon={innocentWon} />
 
       {/* The Secret Word */}
       <motion.div
@@ -196,10 +179,10 @@ export function ResultView() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <Card className="bg-primary/5 border-primary/20">
+        <Card className="bg-card/60 backdrop-blur-xl border-border/60">
           <CardContent className="p-6 text-center">
             <h2 className="text-lg font-semibold mb-2">The Secret Word Was</h2>
-            <div className="text-3xl font-bold text-primary bg-primary/10 px-6 py-3 rounded-lg inline-block">
+            <div className="text-3xl font-bold text-primary bg-primary/10 px-6 py-3 rounded-lg inline-block animate-pulse">
               {crewWord}
             </div>
           </CardContent>
@@ -212,7 +195,7 @@ export function ResultView() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <Card>
+        <Card className="bg-card/60 backdrop-blur-xl border-border/60">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Crown className="w-5 h-5 text-destructive" />
@@ -221,28 +204,31 @@ export function ResultView() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-3">
-              {impostors.map((impostor, index) => (
-                <motion.div
-                  key={impostor.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 + index * 0.1 }}
-                  className="flex items-center gap-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg"
-                >
-                  <div className="w-12 h-12 bg-destructive/20 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-destructive">
-                      {getPlayerInitials(impostor.name)}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{impostor.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      Received {voteCounts[impostor.id]?.count || 0} vote{voteCounts[impostor.id]?.count !== 1 ? 's' : ''}
+                {impostors.map((impostor, index) => {
+                  const palette = getPlayerColorWithHostOverride(impostor.id, !!impostor.is_host);
+                  const tile = `bg-gradient-to-br ${palette.tile}`;
+                  return (
+                  <motion.div
+                    key={impostor.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 + index * 0.1 }}
+                    className={`flex items-center gap-3 p-3 rounded-lg border ${tile}`}
+                  >
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center bg-black/30 border border-white/10">
+                      <span className="text-sm font-medium">
+                        {getPlayerInitials(impostor.name)}
+                      </span>
                     </div>
-                  </div>
-                  <Crown className="w-5 h-5 text-destructive" />
-                </motion.div>
-              ))}
+                    <div className="flex-1">
+                      <div className="font-medium">{impostor.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        Received {voteCounts[impostor.id]?.count || 0} vote{voteCounts[impostor.id]?.count !== 1 ? 's' : ''}
+                      </div>
+                    </div>
+                    <Crown className="w-5 h-5 text-destructive" />
+                  </motion.div>
+                );})}
             </div>
           </CardContent>
         </Card>
@@ -254,7 +240,7 @@ export function ResultView() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
       >
-        <Card>
+        <Card className="bg-card/60 backdrop-blur-xl border-border/60">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="w-5 h-5" />
@@ -306,7 +292,7 @@ export function ResultView() {
       </motion.div>
 
       {/* Game Settings Summary */}
-      <Card>
+      <Card className="bg-card/60 backdrop-blur-xl border-border/60">
         <CardContent className="p-4">
           <h3 className="font-semibold mb-3 flex items-center gap-2">
             <Package className="w-4 h-4" />
@@ -404,6 +390,74 @@ export function ResultView() {
             )}
           </Button>
         )}
+      </motion.div>
+    </div>
+  );
+}
+
+function DramaticReveal({ innocentWon }: { innocentWon: boolean }) {
+  return (
+    <div className="relative overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="text-center py-4"
+      >
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 140, damping: 18 }}
+          className="relative inline-block"
+        >
+          <motion.div
+            initial={{ scale: 0, rotate: 0 }}
+            animate={{ scale: 1, rotate: innocentWon ? 360 : 0 }}
+            transition={{ duration: innocentWon ? 0.8 : 0.5, ease: 'easeOut' }}
+            className="absolute -inset-6 rounded-full bg-gradient-to-tr from-primary/20 to-accent/20 blur-2xl"
+          />
+          <div className="relative z-10 text-4xl sm:text-5xl font-extrabold tracking-tight">
+            {innocentWon ? (
+              <span className="bg-gradient-to-r from-emerald-400 via-emerald-200 to-white bg-clip-text text-transparent">
+                Innocents Win!
+              </span>
+            ) : (
+              <span className="bg-gradient-to-r from-rose-400 via-rose-200 to-white bg-clip-text text-transparent">
+                Impostor Wins!
+              </span>
+            )}
+          </div>
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: '100%', opacity: 1 }}
+            transition={{ delay: 0.15, duration: 0.6 }}
+            className="mx-auto mt-2 h-[3px] max-w-xs bg-gradient-to-r from-transparent via-foreground/60 to-transparent"
+          />
+        </motion.div>
+      </motion.div>
+
+      {/* Confetti-like sparkles */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+      >
+        {Array.from({ length: 24 }).map((_, i) => (
+          <motion.span
+            key={i}
+            initial={{ x: '50%', y: '50%', scale: 0, rotate: 0, opacity: 0 }}
+            animate={{
+              x: `${50 + Math.cos((i / 24) * Math.PI * 2) * 60}%`,
+              y: `${50 + Math.sin((i / 24) * Math.PI * 2) * 35}%`,
+              scale: [0, 1, 0.8],
+              rotate: innocentWon ? [0, 180, 360] : [0, -120, -240],
+              opacity: [0, 1, 0],
+            }}
+            transition={{ duration: 1.2, delay: 0.1 + i * 0.015, ease: 'easeOut' }}
+            className={`${innocentWon ? 'bg-emerald-400' : 'bg-rose-400'} absolute block h-1 w-1 rounded-full shadow-[0_0_10px_currentColor]`}
+          />
+        ))}
       </motion.div>
     </div>
   );

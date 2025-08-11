@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Settings, Crown, User, XCircle, Power } from 'lucide-react';
+import { Play, Crown, User, XCircle, Power } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useGameStore } from '@/stores/game-store';
-import { getPlayerInitials } from '@/lib/utils';
-import { SettingsPanel } from './settings-panel';
+import { getPlayerInitials, getPlayerColorWithHostOverride } from '@/lib/utils';
+import { SettingsDropdown } from './settings-dropdown';
 
 export function LobbyView() {
   const { 
@@ -21,6 +21,8 @@ export function LobbyView() {
   const [isStarting, setIsStarting] = useState(false);
 
   const connectedPlayers = players.filter(p => p.connected);
+
+  
   const canStart = connectedPlayers.length >= 3;
 
   const handleKick = async (playerId: string) => {
@@ -94,7 +96,7 @@ export function LobbyView() {
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 max-w-5xl mx-auto space-y-6">
       {/* Welcome Message */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -113,7 +115,7 @@ export function LobbyView() {
       </motion.div>
 
       {/* Players Grid */}
-      <Card>
+      <Card className="bg-card/60 backdrop-blur-xl border-border/60">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="w-5 h-5" />
@@ -122,17 +124,21 @@ export function LobbyView() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {connectedPlayers.map((player, index) => (
+            {connectedPlayers.map((player, index) => {
+              const palette = getPlayerColorWithHostOverride(player.id, !!player.is_host);
+              const tile = `bg-gradient-to-br ${palette.tile}`;
+              const nameText = palette.text || '';
+              return (
               <motion.div
                 key={player.id}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.1 }}
-                className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg"
+                className={`flex items-center gap-3 p-3 rounded-lg border ${tile}`}
               >
                 {/* Avatar */}
-                <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-sm font-medium text-primary">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-black/30 border border-white/10">
+                  <span className="text-sm font-medium">
                     {getPlayerInitials(player.name)}
                   </span>
                 </div>
@@ -140,7 +146,7 @@ export function LobbyView() {
                 {/* Name and Host Badge */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium truncate">
+                    <span className={`text-sm font-medium truncate ${nameText}`}>
                       {player.name}
                     </span>
                     {player.is_host && (
@@ -162,68 +168,54 @@ export function LobbyView() {
                   </button>
                 )} */}
               </motion.div>
-            ))}
+            );})}
           </div>
         </CardContent>
       </Card>
 
-      {/* Settings Panel (Host Only) */}
-      {isHost && (
-        <SettingsPanel 
-          isOpen={showSettings} 
-          onOpenChange={setShowSettings} 
-        />
-      )}
-
-      {/* Game Settings Display (Non-Host) */}
-      {!isHost && (
-        <Card>
-          <CardHeader>
+      {/* Settings summary visible to all; host gets inline edit dropdown */}
+      <Card className="bg-card/60 backdrop-blur-xl border-border/60">
+        <CardHeader>
+          <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Settings className="w-5 h-5" />
+              <User className="w-5 h-5" />
               Game Settings
             </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-muted-foreground">Pack:</span>
-                <span className="ml-2 font-medium capitalize">{gameSettings.pack}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Mode:</span>
-                <span className="ml-2 font-medium">
-                  {gameSettings.mode === 'BLANK' ? 'Blank Cards' : 'Deception Mode'}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Timer:</span>
-                <span className="ml-2 font-medium">
-                  {gameSettings.timer_seconds 
-                    ? `${Math.floor(gameSettings.timer_seconds / 60)}:${(gameSettings.timer_seconds % 60).toString().padStart(2, '0')}`
-                    : 'No limit'
-                  }
-                </span>
-              </div>
+            {isHost && <SettingsDropdown />}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-muted-foreground">Pack:</span>
+              <span className="ml-2 font-medium capitalize">{gameSettings.pack}</span>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div>
+              <span className="text-muted-foreground">Mode:</span>
+              <span className="ml-2 font-medium">
+                {gameSettings.mode === 'BLANK' ? 'Blank Cards' : 'Deception Mode'}
+              </span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Timer:</span>
+              <span className="ml-2 font-medium">
+                {gameSettings.timer_seconds 
+                  ? `${Math.floor(gameSettings.timer_seconds / 60)}:${(gameSettings.timer_seconds % 60).toString().padStart(2, '0')}`
+                  : 'No limit'
+                }
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Game Settings Display (Non-Host) */}
+      {/* (Removed separate non-host-only summary; above card now serves both) */}
 
       {/* Action Buttons */}
       <div className="flex flex-col gap-3">
         {isHost && (
           <>
-            <Button
-              onClick={() => setShowSettings(!showSettings)}
-              variant="outline"
-              size="lg"
-              className="w-full h-14"
-            >
-              <Settings className="w-5 h-5 mr-2" />
-              {showSettings ? 'Hide Settings' : 'Game Settings'}
-            </Button>
-
             <Button
               onClick={handleStartGame}
               disabled={!canStart || isStarting}

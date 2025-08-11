@@ -27,15 +27,15 @@ export function GameHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-      <div className="flex items-center justify-between p-4">
+    <header className="sticky top-0 z-50 bg-background/70 backdrop-blur-xl border-b border-border/60">
+      <div className="mx-auto flex w-full max-w-5xl items-center justify-between p-4">
         {/* Room Code */}
         <div className="flex items-center gap-3">
           <motion.button
             onClick={handleCopyRoomCode}
             className={cn(
               'flex items-center gap-2 px-3 py-2 rounded-lg font-mono text-sm font-medium transition-all',
-              'bg-primary/10 hover:bg-primary/20 border border-primary/20',
+              'bg-primary/10 hover:bg-primary/15 border border-primary/20 shadow-sm',
               'focus:outline-none focus:ring-2 focus:ring-primary/50'
             )}
             whileTap={{ scale: 0.95 }}
@@ -66,7 +66,7 @@ export function GameHeader() {
         {/* Player Info & Connection Status */}
         <div className="flex items-center gap-3">
           {/* Player Count */}
-          <div className="flex items-center gap-2 px-3 py-2 bg-secondary/50 rounded-lg">
+          <div className="flex items-center gap-2 px-3 py-2 bg-secondary/40 rounded-lg border border-border/60">
             <Users className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm font-medium">
               {connectedPlayers.length}
@@ -83,10 +83,10 @@ export function GameHeader() {
 
           {/* Connection Status */}
           <div className={cn(
-            'flex items-center gap-2 px-2 py-2 rounded-lg transition-colors',
+            'flex items-center gap-2 px-2 py-2 rounded-lg transition-colors border',
             isConnected 
-              ? 'bg-green-500/10 text-green-500' 
-              : 'bg-destructive/10 text-destructive'
+              ? 'bg-green-500/10 text-green-500 border-green-500/20' 
+              : 'bg-destructive/10 text-destructive border-destructive/20'
           )}>
             {isConnected ? (
               <Wifi className="w-4 h-4" />
@@ -94,6 +94,8 @@ export function GameHeader() {
               <WifiOff className="w-4 h-4" />
             )}
           </div>
+
+          {/* Settings control moved into Lobby settings card for better placement */}
         </div>
       </div>
     </header>

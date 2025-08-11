@@ -6,7 +6,7 @@ import { Clock, Users, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useGameStore } from '@/stores/game-store';
-import { formatTime } from '@/lib/utils';
+import { formatTime, getPlayerColorWithHostOverride } from '@/lib/utils';
 
 export function DiscussView() {
   const { 
@@ -45,7 +45,9 @@ export function DiscussView() {
   }, [gameSettings?.timer_seconds]);
 
   const hasTimer = gameSettings?.timer_seconds && timeRemaining !== null;
+  // revert to width tween approach
   const connectedPlayers = players.filter(p => p.connected);
+  
 
   const handleEndDiscussion = async () => {
     if (!isHost) return;
@@ -75,7 +77,7 @@ export function DiscussView() {
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -95,7 +97,7 @@ export function DiscussView() {
           animate={{ opacity: 1, scale: 1 }}
           className="text-center"
         >
-          <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
+          <Card className="bg-card/60 backdrop-blur-xl border-border/60">
             <CardContent className="p-6">
               <div className="flex items-center justify-center gap-3 mb-2">
                 <Clock className="w-6 h-6 text-primary" />
@@ -106,13 +108,11 @@ export function DiscussView() {
               <p className="text-sm text-muted-foreground">Time remaining</p>
               
               {/* Progress bar */}
-              <div className="w-full bg-secondary/30 rounded-full h-2 mt-4">
+              <div className="w-full bg-secondary/30 rounded-full h-2 mt-4 overflow-hidden">
                 <motion.div
                   className="bg-primary h-2 rounded-full"
                   initial={{ width: '100%' }}
-                  animate={{ 
-                    width: `${(timeRemaining! / gameSettings!.timer_seconds!) * 100}%` 
-                  }}
+                  animate={{ width: `${(timeRemaining! / gameSettings!.timer_seconds!) * 100}%` }}
                   transition={{ duration: 0.5 }}
                 />
               </div>
@@ -128,7 +128,7 @@ export function DiscussView() {
           animate={{ opacity: 1 }}
           className="text-center"
         >
-          <Card>
+          <Card className="bg-card/60 backdrop-blur-xl border-border/60">
             <CardContent className="p-6">
               <div className="flex items-center justify-center gap-3 mb-2">
                 <MessageCircle className="w-6 h-6 text-accent" />
@@ -143,7 +143,7 @@ export function DiscussView() {
       )}
 
       {/* Players */}
-      <Card>
+      <Card className="bg-card/60 backdrop-blur-xl border-border/60">
         <CardContent className="p-4">
           <h3 className="font-semibold flex items-center gap-2 mb-4">
             <Users className="w-4 h-4" />
@@ -151,22 +151,26 @@ export function DiscussView() {
           </h3>
 
           <div className="grid gap-2">
-            {connectedPlayers.map((player, index) => (
+            {connectedPlayers.map((player, index) => {
+              const palette = getPlayerColorWithHostOverride(player.id, !!player.is_host);
+              const tile = `bg-gradient-to-br ${palette.tile}`;
+              const nameText = palette.text || '';
+              return (
               <motion.div
                 key={player.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="flex items-center gap-3 p-3 rounded-lg bg-secondary/20"
+                className={`flex items-center gap-3 p-3 rounded-lg border ${tile}`}
               >
-                <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-sm font-medium text-primary">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-black/30 border border-white/10">
+                  <span className="text-sm font-medium">
                     {player.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
-
+                
                 <div className="flex-1">
-                  <span className="font-medium">
+                  <span className={`font-medium ${nameText}`}>
                     {player.name}
                   </span>
                   {player.is_host && (
@@ -176,13 +180,13 @@ export function DiscussView() {
                   )}
                 </div>
               </motion.div>
-            ))}
+            );})}
           </div>
         </CardContent>
       </Card>
 
       {/* Discussion Guidelines */}
-      <Card>
+      <Card className="bg-card/60 backdrop-blur-xl border-border/60">
         <CardContent className="p-4">
           <h3 className="font-semibold mb-3">Discussion Guidelines</h3>
           <div className="space-y-2 text-sm text-muted-foreground">
@@ -206,7 +210,7 @@ export function DiscussView() {
             disabled={isEndingDiscussion}
             size="lg"
             className="w-full h-14"
-            variant="outline"
+            variant="default"
           >
             {isEndingDiscussion ? (
               <div className="flex items-center gap-2">

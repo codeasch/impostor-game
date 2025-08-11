@@ -82,9 +82,9 @@ interface GameState {
 }
 
 const initialSettings: GameSettings = {
-  pack: 'random',
+  pack: 'classic',
   mode: 'BLANK',
-  timer_seconds: 180, // 3 minutes default
+  timer_seconds: 300, // 5 minutes
   impostor_count: 1, // Fixed at 1
   clue_rounds: 1, // Fixed at 1
 };

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useGameStore } from '@/stores/game-store';
+import { getPlayerColorWithHostOverride } from '@/lib/utils';
 
 export function RevealView() {
   const { assignment, currentPlayer, setAssignment, isHost, room, players } = useGameStore();
@@ -16,6 +17,10 @@ export function RevealView() {
   const [gameMode, setGameMode] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentAssignment, setCurrentAssignment] = useState<any>(null);
+  const [holdProgress, setHoldProgress] = useState(0);
+  const holdRaf = useRef<number | null>(null);
+  const holdStartTs = useRef<number | null>(null);
+  const HOLD_DURATION_MS = 1200;
 
   // Reset local UI state when component mounts, but keep any preloaded assignment
   useEffect(() => {
@@ -202,12 +207,12 @@ export function RevealView() {
           className="relative"
         >
           <Card 
-            className={`reveal-card ${isRevealed ? 'flipped' : ''} h-64 cursor-pointer`}
+            className={`reveal-card ${isRevealed ? 'flipped' : ''} h-64 cursor-pointer bg-card/60 backdrop-blur-xl border-border/60`}
             onClick={!isRevealed ? handleReveal : undefined}
           >
             <div className="reveal-card-inner relative w-full h-full">
               {/* Front (Hidden) */}
-              <div className="reveal-card-front absolute inset-0 flex flex-col items-center justify-center p-6 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg">
+              <div className="reveal-card-front absolute inset-0 flex flex-col items-center justify-center p-6 rounded-lg">
                 <motion.div
                   animate={{ rotate: isRevealed ? 0 : 360 }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
@@ -300,34 +305,75 @@ export function RevealView() {
                   ? "🎉 All ready! Starting discussion..." 
                   : "Waiting for other players..."}
               </p>
+              {/* Ready grid */}
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                {players.filter(p=>p.connected).map(p => {
+                  const isPlayerReady = (room?.ready_players || []).includes(p.id);
+                  const palette = getPlayerColorWithHostOverride(p.id, !!p.is_host);
+                  const tile = `bg-gradient-to-br ${palette.tile}`;
+                  return (
+                    <div key={p.id} className={`relative h-10 w-10 rounded-full flex items-center justify-center ${isPlayerReady ? 'ring-2 ring-green-400/80' : 'ring-2 ring-muted/40'}`}>
+                      <div className={`h-9 w-9 rounded-full border border-white/10 flex items-center justify-center text-xs font-semibold text-foreground/90 ${tile}`}>
+                        {p.name?.charAt(0)?.toUpperCase() || '?'}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
             
             {/* Host Override Button */}
             {isHost && readyCount < totalCount && (
-              <Button
-                onClick={async () => {
-                  try {
-                    const response = await fetch('/api/game/check-ready', {
-                      method: 'POST',
-                      headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('impostor_token')}`,
-                      },
-                    });
-                    if (!response.ok) {
-                      const errorData = await response.json();
-                      alert(`Failed to start discussion: ${errorData.error || 'Unknown error'}`);
-                    }
-                  } catch (error) {
-                    console.error('Failed to start discussion:', error);
-                    alert('Failed to start discussion. Please try again.');
-                  }
-                }}
-                variant="outline"
-                size="sm"
-                className="text-xs"
-              >
-                Force Start Discussion (Host)
-              </Button>
+              <div className="mt-2">
+                <button
+                  onPointerDown={() => {
+                    if (holdRaf.current) cancelAnimationFrame(holdRaf.current);
+                    holdStartTs.current = performance.now();
+                    const tick = (now: number) => {
+                      if (!holdStartTs.current) return;
+                      const elapsed = now - holdStartTs.current;
+                      const p = Math.min(1, elapsed / HOLD_DURATION_MS);
+                      setHoldProgress(p);
+                      if (p < 1) {
+                        holdRaf.current = requestAnimationFrame(tick);
+                      } else {
+                        // Trigger force start once
+                        (async () => {
+                          try {
+                            const response = await fetch('/api/game/check-ready', {
+                              method: 'POST',
+                              headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('impostor_token')}`,
+                              },
+                            });
+                            // ignore errors silently here
+                          } catch {}
+                        })();
+                      }
+                    };
+                    holdRaf.current = requestAnimationFrame(tick);
+                  }}
+                  onPointerUp={() => {
+                    if (holdRaf.current) cancelAnimationFrame(holdRaf.current);
+                    holdRaf.current = null;
+                    holdStartTs.current = null;
+                    setHoldProgress(0);
+                  }}
+                  onPointerLeave={() => {
+                    if (holdRaf.current) cancelAnimationFrame(holdRaf.current);
+                    holdRaf.current = null;
+                    holdStartTs.current = null;
+                    setHoldProgress(0);
+                  }}
+                  className="relative w-full overflow-hidden rounded-md border border-primary/40 bg-background/60 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/5"
+                >
+                  <span className="relative z-10">Hold to force start (Host)</span>
+                  <span
+                    className="absolute inset-y-0 left-0 bg-primary/30"
+                    style={{ width: `${Math.round(holdProgress * 100)}%` }}
+                  />
+                </button>
+              </div>
             )}
           </motion.div>
         )}

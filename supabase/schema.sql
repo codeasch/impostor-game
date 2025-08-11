@@ -42,6 +42,18 @@ create table rounds (
 );
 create index on rounds(room_code);
 
+-- Persisted game settings per room (applies in lobby / between rounds)
+create table if not exists room_settings (
+  room_code text primary key references rooms(code) on delete cascade,
+  pack text not null default 'random',
+  mode text not null default 'BLANK',
+  impostor_count int not null default 1,
+  clue_rounds int not null default 1,
+  timer_seconds int,
+  updated_at timestamptz default now()
+);
+create index if not exists room_settings_room_idx on room_settings(room_code);
+
 create table assignments (
   id uuid primary key default gen_random_uuid(),
   round_id uuid references rounds(id) on delete cascade,
@@ -76,6 +88,7 @@ alter table rounds enable row level security;
 alter table assignments enable row level security;
 alter table votes enable row level security;
 alter table presence enable row level security;
+alter table room_settings enable row level security;
 
 -- Players can see rooms they're part of
 create policy "Players can view their room" on rooms
@@ -92,6 +105,34 @@ create policy "Players can view room players" on players
     room_code in (
       select room_code from players 
       where id = (current_setting('request.jwt.claims', true)::json->>'player_id')::uuid
+    )
+  );
+
+-- Players can view room settings
+create policy if not exists "Players can view room settings" on room_settings
+  for select using (
+    room_code in (
+      select room_code from players 
+      where id = (current_setting('request.jwt.claims', true)::json->>'player_id')::uuid
+    )
+  );
+
+-- Host can upsert settings
+create policy if not exists "Host can upsert settings" on room_settings
+  for insert with check (
+    room_code in (
+      select room_code from players 
+      where id = (current_setting('request.jwt.claims', true)::json->>'player_id')::uuid
+      and is_host = true
+    )
+  );
+
+create policy if not exists "Host can update settings" on room_settings
+  for update using (
+    room_code in (
+      select room_code from players 
+      where id = (current_setting('request.jwt.claims', true)::json->>'player_id')::uuid
+      and is_host = true
     )
   );
 
@@ -137,6 +178,7 @@ alter publication supabase_realtime add table rooms;
 alter publication supabase_realtime add table players;
 alter publication supabase_realtime add table rounds;
 alter publication supabase_realtime add table votes;
+alter publication supabase_realtime add table room_settings;
 
 -- Optional RPC to remove a uuid from a uuid[] column by key
 CREATE OR REPLACE FUNCTION array_remove_uuid(

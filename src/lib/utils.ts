@@ -105,3 +105,56 @@ export function throttle<T extends (...args: any[]) => any>(
     }
   };
 }
+
+// Deterministic player color mapping
+// Shared palette used across all views so each player keeps a consistent color
+// Reordered palette to maximize contrast early; host reserved as fuchsia/purple
+export const HOST_PLAYER_COLOR = { tile: 'from-fuchsia-500/25 to-fuchsia-500/10 border-fuchsia-500/30', text: 'text-fuchsia-300' };
+export const PLAYER_COLOR_PALETTE = [
+  HOST_PLAYER_COLOR, // reserved for host (purple)
+  { tile: 'from-orange-500/40 to-orange-500/20 border-orange-500/50', text: 'text-orange-300' }, // orange (2nd)
+  { tile: 'from-cyan-500/40 to-cyan-500/20 border-cyan-500/50', text: 'text-cyan-300' },        // cyan
+  { tile: 'from-emerald-500/40 to-emerald-500/20 border-emerald-500/50', text: 'text-emerald-300' }, // green
+  { tile: 'from-rose-500/40 to-rose-500/20 border-rose-500/50', text: 'text-rose-300' },        // red/pink
+  { tile: 'from-sky-500/40 to-sky-500/20 border-sky-500/50', text: 'text-sky-300' },            // blue
+  { tile: 'from-lime-500/40 to-lime-500/20 border-lime-500/50', text: 'text-lime-300' },        // lime
+  { tile: 'from-pink-500/40 to-pink-500/20 border-pink-500/50', text: 'text-pink-300' },        // pink alt
+  { tile: 'from-violet-500/35 to-violet-500/20 border-violet-500/45', text: 'text-violet-300' }, // secondary purple (later)
+];
+
+function hashStringToInt(input: string): number {
+  // djb2 hash
+  let hash = 5381;
+  for (let i = 0; i < input.length; i++) {
+    hash = ((hash << 5) + hash) + input.charCodeAt(i);
+    hash |= 0; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
+}
+
+export function getPlayerColor(playerId: string) {
+  const idx = hashStringToInt(playerId) % PLAYER_COLOR_PALETTE.length;
+  return PLAYER_COLOR_PALETTE[idx];
+}
+
+export function getPlayerColorWithHostOverride(playerId: string, isHost: boolean) {
+  if (isHost) return HOST_PLAYER_COLOR;
+  return getPlayerColor(playerId);
+}
+
+// Room-scoped unique color assignment to prioritize distinct colors per added player
+export function getRoomColorMap(players: Array<{ id: string; is_host?: boolean }>) {
+  const mapping: Record<string, { tile: string; text: string }> = {};
+  const palette = PLAYER_COLOR_PALETTE;
+  // Assign host first
+  const host = players.find(p => p.is_host);
+  if (host) mapping[host.id] = HOST_PLAYER_COLOR;
+  // Sort others by id for stability
+  const others = players.filter(p => !p.is_host).slice().sort((a, b) => a.id.localeCompare(b.id));
+  let idx = 1; // start after host color
+  for (const p of others) {
+    mapping[p.id] = palette[idx % palette.length];
+    idx += 1;
+  }
+  return mapping;
+}

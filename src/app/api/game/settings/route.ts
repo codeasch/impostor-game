@@ -25,6 +25,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid settings' }, { status: 400 });
     }
 
+    // Persist settings
+    await supabaseAdmin
+      .from('room_settings')
+      .upsert({ room_code, ...settings, updated_at: new Date().toISOString() }, { onConflict: 'room_code' });
+
     // Broadcast the settings to all clients (best-effort)
     try {
       const channel = supabaseAdmin.channel(`room:${room_code}`);
