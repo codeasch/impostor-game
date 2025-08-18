@@ -57,6 +57,40 @@ export function pickRandomItems<T>(array: T[], count: number): T[] {
   return shuffled.slice(0, count);
 }
 
+export function pickWeightedRandom<T>(items: T[], weights: number[]): T {
+  if (items.length !== weights.length || items.length === 0) {
+    throw new Error('Items and weights arrays must have the same length and be non-empty');
+  }
+  
+  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+  let random = Math.random() * totalWeight;
+  
+  for (let i = 0; i < items.length; i++) {
+    random -= weights[i];
+    if (random <= 0) {
+      return items[i];
+    }
+  }
+  
+  // Fallback to last item (shouldn't happen with proper weights)
+  return items[items.length - 1];
+}
+
+export function createRotationWeights<T>(items: T[], usedItems: Set<T>, recentItems: T[], baseWeight: number = 1.0): number[] {
+  return items.map(item => {
+    if (!usedItems.has(item)) {
+      // Unused items get highest weight
+      return baseWeight * 3;
+    } else if (!recentItems.includes(item)) {
+      // Used but not recent items get medium weight
+      return baseWeight * 2;
+    } else {
+      // Recent items get lowest weight
+      return baseWeight;
+    }
+  });
+}
+
 export function copyToClipboard(text: string): Promise<void> {
   if (navigator.clipboard && window.isSecureContext) {
     return navigator.clipboard.writeText(text);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { shuffleArray } from '@/lib/utils';
+import { shuffleArray, pickWeightedRandom, createRotationWeights } from '@/lib/utils';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret-key';
@@ -74,16 +74,73 @@ async function loadWordPack(packId: string): Promise<any> {
   }
 }
 
-function getCloseWord(crewWord: string, pack: any): string {
+function getCloseWord(crewWord: string, pack: any, usedCloseWords: Set<string>): string {
   // Try to get from close_pairs first
   if (pack.close_pairs && pack.close_pairs[crewWord]) {
     const closePairs = pack.close_pairs[crewWord];
-    return closePairs[Math.floor(Math.random() * closePairs.length)];
+    
+    // Create weights for close pairs based on usage history
+    const closeWeights = closePairs.map((word: string) => 
+      usedCloseWords.has(word) ? 1 : 3 // Unused close words get higher weight
+    );
+    
+    // Use weighted selection to avoid repetition
+    return pickWeightedRandom(closePairs, closeWeights);
   }
   
-  // Fallback: pick a random different word
+  // Fallback: pick a random different word with weighted selection
   const otherWords = pack.words.filter((w: string) => w !== crewWord);
-  return otherWords[Math.floor(Math.random() * otherWords.length)];
+  const otherWeights = otherWords.map((word: string) => 
+    usedCloseWords.has(word) ? 1 : 2 // Unused words get higher weight
+  );
+  
+  return pickWeightedRandom(otherWords, otherWeights);
+}
+
+function selectOptimalWord(pack: any, usedWords: Set<string>, lastCrewWord: string | null, recentWords: string[]): string {
+  const availableWords = pack.words;
+  
+  // Create weights for all words based on usage history
+  const weights = createRotationWeights(availableWords, usedWords, recentWords);
+  
+  // If we have enough words, prioritize unused ones
+  if (availableWords.length > usedWords.size) {
+    // Get all unused words
+    const unusedWords = availableWords.filter((word: string) => !usedWords.has(word));
+    
+    // If we have unused words, pick from them (avoiding recent words if possible)
+    if (unusedWords.length > 0) {
+      // Filter out recent words to avoid immediate repetition
+      const filteredUnused = unusedWords.filter((word: string) => !recentWords.includes(word));
+      if (filteredUnused.length > 0) {
+        // Use weighted selection from filtered unused words
+        const filteredWeights = weights.filter((_, index) => filteredUnused.includes(availableWords[index]));
+        return pickWeightedRandom(filteredUnused, filteredWeights);
+      }
+      // If all unused words are recent, fall back to weighted selection from unused
+      const unusedWeights = weights.filter((_, index) => unusedWords.includes(availableWords[index]));
+      return pickWeightedRandom(unusedWords, unusedWeights);
+    }
+  }
+  
+  // If all words have been used, use weighted selection for smart rotation
+  if (usedWords.size > 0) {
+    // Create a rotation pool that excludes recent words
+    const rotationPool = Array.from(usedWords).filter((word: string) => !recentWords.includes(word));
+    
+    if (rotationPool.length > 0) {
+      // Use weighted selection from rotation pool
+      const rotationWeights = weights.filter((_, index) => rotationPool.includes(availableWords[index]));
+      return pickWeightedRandom(rotationPool, rotationWeights);
+    }
+    
+    // If all words are recent, use weighted selection from all words
+    // This ensures even distribution over time
+    return pickWeightedRandom(availableWords, weights);
+  }
+  
+  // Fallback: use weighted selection from all words
+  return pickWeightedRandom(availableWords, weights);
 }
 
 export async function POST(request: NextRequest) {
@@ -139,29 +196,57 @@ export async function POST(request: NextRequest) {
     // Load word pack (deduped/sanitized)
     const pack = await loadWordPack(settings.pack);
 
-    // Fetch last round to avoid immediate repeats, best-effort
+    // Fetch all previous rounds to track used words
+    let usedWords = new Set<string>();
+    let usedCloseWords = new Set<string>();
     let lastCrewWord: string | null = null;
+    let recentWords: string[] = [];
+    
     if (room.current_round && room.current_round > 0) {
-      const { data: lastRound } = await supabaseAdmin
+      const { data: previousRounds } = await supabaseAdmin
         .from('rounds')
-        .select('crew_word')
+        .select('crew_word, pack, mode')
         .eq('room_code', room_code)
-        .eq('round_number', room.current_round)
-        .single();
-      lastCrewWord = lastRound?.crew_word ? String(lastRound.crew_word).toLowerCase() : null;
-    }
-
-    // Pick a word, avoid last round's crew word if possible
-    let crewWord = pack.words[Math.floor(Math.random() * pack.words.length)];
-    if (pack.words.length > 1 && lastCrewWord) {
-      let attempts = 0;
-      while (crewWord === lastCrewWord && attempts < 5) {
-        crewWord = pack.words[Math.floor(Math.random() * pack.words.length)];
-        attempts++;
+        .order('round_number', { ascending: false })
+        .limit(20); // Track last 20 rounds for better rotation
+      
+      if (previousRounds && previousRounds.length > 0) {
+        // Get the last round's word
+        lastCrewWord = previousRounds[0]?.crew_word ? String(previousRounds[0].crew_word).toLowerCase() : null;
+        
+        // Track all used words and close words
+        for (const round of previousRounds) {
+          if (round.crew_word) {
+            const crewWord = String(round.crew_word).toLowerCase();
+            usedWords.add(crewWord);
+            
+            // If it was a deception mode, also track the close word that was used
+            if (round.mode === 'DECEPTION' && round.pack) {
+              try {
+                const roundPack = await loadWordPack(round.pack);
+                if (roundPack.close_pairs && roundPack.close_pairs[crewWord]) {
+                  // Find which close word was likely used (we'll track all possibilities)
+                  const closePairs = roundPack.close_pairs[crewWord];
+                  closePairs.forEach((closeWord: string) => usedCloseWords.add(closeWord.toLowerCase()));
+                }
+              } catch (error) {
+                // Ignore errors loading old packs
+              }
+            }
+          }
+        }
+        
+        // Create recent words array for better rotation (last 10 rounds)
+        recentWords = previousRounds.slice(0, 10)
+          .map(round => round.crew_word ? String(round.crew_word).toLowerCase() : '')
+          .filter(word => word !== '');
       }
     }
+
+    // Pick a word using the improved selection logic
+    const crewWord = selectOptimalWord(pack, usedWords, lastCrewWord, recentWords);
     const impostorWord = settings.mode === 'DECEPTION' 
-      ? getCloseWord(crewWord, pack) 
+      ? getCloseWord(crewWord, pack, usedCloseWords)
       : '?';
 
     // Create round
