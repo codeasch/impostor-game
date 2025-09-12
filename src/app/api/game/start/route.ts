@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { shuffleArray } from '@/lib/utils';
 import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import path from 'path';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret-key';
 
@@ -20,10 +22,8 @@ function normalizeWord(raw: unknown): string | null {
   return trimmed.toLowerCase();
 }
 
-async function loadWordPack(packId: string): Promise<any> {
+function loadWordPack(packId: string): any {
   try {
-    const fs = await import('fs');
-    const path = await import('path');
     if (packId === 'random') {
       // Aggregate all packs
       const indexPath = path.join(process.cwd(), 'public', 'packs', 'index.json');
@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Load word pack (deduped/sanitized)
-    const pack = await loadWordPack(settings.pack);
+    const pack = loadWordPack(settings.pack);
 
     // Fetch all previous rounds to track used words
     let usedWords = new Set<string>();
