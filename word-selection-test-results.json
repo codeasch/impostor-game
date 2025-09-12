@@ -1,0 +1,154 @@
+{
+  "summary": {
+    "totalRounds": 10,
+    "totalPlayers": 10,
+    "mode": "DECEPTION",
+    "totalTime": 35.253600000000006,
+    "avgRoundTime": "3.53",
+    "uniqueWords": 10,
+    "uniqueCloseWords": 10,
+    "totalWords": 50,
+    "coverage": "20.0",
+    "duplicates": 0,
+    "errors": 0,
+    "passed": true
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "crewWord": "book",
+      "closeWord": "orange",
+      "timestamp": "2025-09-12T13:47:42.478Z"
+    },
+    {
+      "round": 2,
+      "crewWord": "happy",
+      "closeWord": "excited",
+      "timestamp": "2025-09-12T13:47:42.484Z"
+    },
+    {
+      "round": 3,
+      "crewWord": "rabbit",
+      "closeWord": "salad",
+      "timestamp": "2025-09-12T13:47:42.487Z"
+    },
+    {
+      "round": 4,
+      "crewWord": "banana",
+      "closeWord": "apple",
+      "timestamp": "2025-09-12T13:47:42.491Z"
+    },
+    {
+      "round": 5,
+      "crewWord": "excited",
+      "closeWord": "cool",
+      "timestamp": "2025-09-12T13:47:42.494Z"
+    },
+    {
+      "round": 6,
+      "crewWord": "phone",
+      "closeWord": "computer",
+      "timestamp": "2025-09-12T13:47:42.498Z"
+    },
+    {
+      "round": 7,
+      "crewWord": "water",
+      "closeWord": "juice",
+      "timestamp": "2025-09-12T13:47:42.500Z"
+    },
+    {
+      "round": 8,
+      "crewWord": "desk",
+      "closeWord": "pizza",
+      "timestamp": "2025-09-12T13:47:42.503Z"
+    },
+    {
+      "round": 9,
+      "crewWord": "dog",
+      "closeWord": "rabbit",
+      "timestamp": "2025-09-12T13:47:42.507Z"
+    },
+    {
+      "round": 10,
+      "crewWord": "cool",
+      "closeWord": "book",
+      "timestamp": "2025-09-12T13:47:42.509Z"
+    }
+  ],
+  "duplicates": [],
+  "errors": [],
+  "performance": [
+    {
+      "round": 1,
+      "duration": 1.5867999999999967,
+      "crewWord": "book",
+      "closeWord": "orange"
+    },
+    {
+      "round": 2,
+      "duration": 1.1336000000000013,
+      "crewWord": "happy",
+      "closeWord": "excited"
+    },
+    {
+      "round": 3,
+      "duration": 0.7271000000000072,
+      "crewWord": "rabbit",
+      "closeWord": "salad"
+    },
+    {
+      "round": 4,
+      "duration": 1.120599999999996,
+      "crewWord": "banana",
+      "closeWord": "apple"
+    },
+    {
+      "round": 5,
+      "duration": 0.6794000000000011,
+      "crewWord": "excited",
+      "closeWord": "cool"
+    },
+    {
+      "round": 6,
+      "duration": 0.7428999999999917,
+      "crewWord": "phone",
+      "closeWord": "computer"
+    },
+    {
+      "round": 7,
+      "duration": 0.4069999999999965,
+      "crewWord": "water",
+      "closeWord": "juice"
+    },
+    {
+      "round": 8,
+      "duration": 0.5681000000000012,
+      "crewWord": "desk",
+      "closeWord": "pizza"
+    },
+    {
+      "round": 9,
+      "duration": 0.7395999999999958,
+      "crewWord": "dog",
+      "closeWord": "rabbit"
+    },
+    {
+      "round": 10,
+      "duration": 0.6471000000000089,
+      "crewWord": "cool",
+      "closeWord": "book"
+    }
+  ],
+  "wordFrequency": {
+    "book": 1,
+    "happy": 1,
+    "rabbit": 1,
+    "banana": 1,
+    "excited": 1,
+    "phone": 1,
+    "water": 1,
+    "desk": 1,
+    "dog": 1,
+    "cool": 1
+  }
+}
